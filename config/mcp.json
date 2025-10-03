@@ -1,0 +1,18 @@
+{
+  "secure-filesystem-server": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/"]
+  },
+  "mcp-fetch": {
+    "command": "uvx",
+    "args": ["mcp-server-fetch"]
+  },
+  "sequential-thinking-server": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+  },
+  "memory-server": {
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-memory"]
+  }
+}
