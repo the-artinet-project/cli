@@ -100,6 +100,10 @@ You are a helpful assistant that can...
 
 - To point to another agents folder set `SYMPHONY_AGENT_DIR=absolute/path` in your environment variables.
 
+### Logs
+
+- Detailed logs of each session can be found in the the `artinet.log` file in the installation directory.
+
 ## License
 
 GPL-3.0
