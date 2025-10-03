@@ -1,10 +1,6 @@
 # Symphony
 
-An interactive command-line interface for managing multi-agent systems.
-
-## Requirements
-
-- Node.js ≥ 22.0.0
+An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
 
 ## Installation
 
@@ -103,6 +99,15 @@ You are a helpful assistant that can...
 ### Logs
 
 - Detailed logs of each session can be found in the the `artinet.log` file in the installation directory.
+
+### Coming Soon
+
+- Custom [IRouter](https://www.npmjs.com/package/@artinet/router?activeTab=readme) plugins.
+- Custom [Agent Executors](https://github.com/the-artinet-project/artinet-sdk).
+
+## Requirements
+
+- Node.js ≥ 22.0.0
 
 ## License
 

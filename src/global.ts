@@ -1,5 +1,3 @@
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import { AgentLoader, loadAgents } from "./config/load-agents.js";
 import { LocalRouter } from "@artinet/router";
 import { createAgentExecutor } from "./execution/instance.js";
@@ -9,10 +7,9 @@ import { logger } from "./utils/logger.js";
 import { loadAndSortTools } from "./config/load-tools.js";
 import { logger as sdkLogger } from "@artinet/sdk";
 import { PatchedFileStore } from "./utils/storage-patch.js";
+import { configManager } from "./config/manager.js";
 
 sdkLogger.level = "silent";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 let GlobalSessions: PatchedFileStore | undefined;
 let GlobalRouter: LocalRouter | undefined;
@@ -22,7 +19,7 @@ let GlobalTeams: Record<string, Team> | undefined;
 
 async function loadEnv() {
   logger.log("Loading Environment Tools");
-  GlobalTools = loadAndSortTools();
+  GlobalTools = await loadAndSortTools();
   logger.log("Global Tools Loaded");
   const agentLoader: AgentLoader = await loadAgents(GlobalTools);
   GlobalAgents = agentLoader.agents;
@@ -42,9 +39,11 @@ async function loadEnv() {
     },
   });
   logger.log("Global Router Loaded");
-  GlobalSessions = new PatchedFileStore(
-    join(__dirname, process.env.SESSION_DIR || "../config/sessions")
-  );
+
+  // Use ConfigManager for sessions path
+  const sessionsPath = configManager.getConfigPath("sessions");
+  GlobalSessions = new PatchedFileStore(sessionsPath);
+
   Object.values(GlobalAgents).forEach(async (agent) => {
     await GlobalRouter?.createAgent({
       engine: await createAgentExecutor(agentLoader, GlobalRouter, agent),

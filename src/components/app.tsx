@@ -4,7 +4,7 @@
  */
 
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Session } from "@artinet/types";
 import { Box, Text, useInput, useApp } from "ink";
 import { RuntimeAgent, Team } from "../types/index.js";
@@ -124,6 +124,10 @@ export const App: React.FC = () => {
     { isActive: isActive("app") }
   );
 
+  const handleReturn = useCallback(() => {
+    returnToCommon();
+  }, []);
+
   const renderHeader = () => {
     return (
       <Box
@@ -227,7 +231,7 @@ export const App: React.FC = () => {
             agent={selectedAgent}
             sessionId={selectedTaskId}
             initialSession={initialSession}
-            onReturn={() => returnToCommon()}
+            onReturn={handleReturn}
             id="chat"
           />
         )}

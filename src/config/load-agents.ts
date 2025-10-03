@@ -2,8 +2,6 @@
  * Copyright 2025 The Artinet Project
  * SPDX-License-Identifier: GPL-3.0-only
  */
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import fs from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -22,6 +20,7 @@ import {
   Team,
 } from "../types/load.js";
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { configManager } from "./manager.js";
 
 /**
  * Loads and validates agent definitions from frontmatter markdown files
@@ -180,19 +179,24 @@ export class AgentLoader {
   }
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const AGENT_DIR = join(
-  __dirname,
-  process.env.SYMPHONY_AGENT_DIR || "../../../config/agents"
-);
-
 export async function loadAgents(
   stdioServers: Record<string, StdioServerParameters>
 ): Promise<AgentLoader> {
+  // Ensure user config is initialized
+  await configManager.ensureUserConfig();
+
+  const agentDir = configManager.getConfigPath("agents");
+
   const agentLoader = new AgentLoader({
     availableTools: Object.keys(stdioServers),
   });
-  await agentLoader.loadAgents(AGENT_DIR);
+
+  try {
+    await agentLoader.loadAgents(agentDir);
+  } catch (error) {
+    console.error(`Failed to load agents from ${agentDir}:`, error);
+    throw error;
+  }
+
   return agentLoader;
 }

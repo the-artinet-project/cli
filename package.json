@@ -1,31 +1,22 @@
 {
   "name": "@artinet/symphony",
-  "version": "0.0.1",
-  "description": "An interactive CLI for managing multi-agent systems",
-  "type": "module",
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist/types/src/index.d.ts",
-  "rootDir": ".",
-  "bin": {
-    "symphony": "./dist/bin/symphony.js"
+  "version": "0.0.4",
+  "description": "An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.",
+  "author": "artinet",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/the-artinet-project/artinet-sdk"
   },
   "files": [
     "dist",
+    "config",
     "package.json",
     "README.md",
     "LICENSE"
   ],
-  "scripts": {
-    "build": "tsc",
-    "clean": "rimraf dist",
-    "dev": "tsc --watch",
-    "start": "node dist/bin/symphony.js",
-    "prepublishOnly": "npm run clean && npm run build",
-    "lint": "eslint src --ext .ts,.tsx",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+  "bin": {
+    "symphony": "./dist/bin/symphony.js"
   },
   "keywords": [
     "artinet",
@@ -41,11 +32,17 @@
     "modelcontextprotocol",
     "mcp"
   ],
-  "author": "artinet",
-  "license": "GPL-3.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/the-artinet-project/artinet-sdk"
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist/types/src/index.d.ts",
+  "rootDir": ".",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "dev": "tsc --watch",
+    "start": "node dist/bin/symphony.js",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
     "@artinet/types": "^0.0.2",
@@ -62,7 +59,7 @@
     "inquirer": "^9.0.0",
     "ora": "^7.0.0",
     "p-limit": "^7.1.1",
-    "react": "^19.0.0",
+    "react": "^19.2.0",
     "table": "^6.8.0",
     "uuid": "^11.1.0",
     "yaml": "^2.8.1",

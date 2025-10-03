@@ -1,5 +1,4 @@
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { join, dirname } from "path";
 import fs from "fs/promises";
 import { logger } from "../utils/logger.js";
 import {
@@ -7,44 +6,59 @@ import {
   AgentSessionMap,
   AgentSession,
 } from "../types/index.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const AGENT_SESSION_FILE = join(
-  __dirname,
-  process.env.AGENT_SESSION_FILE || "../../config/agents-session.json"
-);
+import { configManager } from "./manager.js";
 
 let GlobalSessionMap: AgentSessionMap | undefined = undefined;
+let agentSessionFile: string | undefined = undefined;
+
+async function getAgentSessionFile(): Promise<string> {
+  if (!agentSessionFile) {
+    // Handle environment variable override first
+    if (process.env.AGENT_SESSION_FILE) {
+      agentSessionFile = process.env.AGENT_SESSION_FILE;
+    } else {
+      // Ensure user config is initialized
+      await configManager.ensureUserConfig();
+      const sessionsDir = configManager.getConfigPath("sessions");
+      agentSessionFile = join(sessionsDir, "agents-session.json");
+    }
+  }
+  return agentSessionFile;
+}
 
 export async function loadSessionMap(): Promise<AgentSessionMap> {
+  const sessionFile = await getAgentSessionFile();
+
   // Ensure directory exists
-  const dir = dirname(AGENT_SESSION_FILE);
+  const dir = dirname(sessionFile);
   try {
     await fs.access(dir);
   } catch {
     // Directory does not exist, so create it
     await fs.mkdir(dir, { recursive: true });
   }
+
   // Ensure file exists, create if not
   try {
-    await fs.access(AGENT_SESSION_FILE);
+    await fs.access(sessionFile);
   } catch {
     // File does not exist, so create it with an empty object
-    await fs.writeFile(AGENT_SESSION_FILE, "{}", "utf8");
+    await fs.writeFile(sessionFile, "{}", "utf8");
   }
+
   try {
-    await fs.access(AGENT_SESSION_FILE);
+    await fs.access(sessionFile);
   } catch {
     throw new Error(
-      `session map file does not exist or is not accessible: ${AGENT_SESSION_FILE}`
+      `session map file does not exist or is not accessible: ${sessionFile}`
     );
   }
 
-  const sessionMap = await fs.readFile(AGENT_SESSION_FILE, "utf8");
+  const sessionMap = await fs.readFile(sessionFile, "utf8");
   if (sessionMap.trim() === "") {
     throw new Error("session map file is empty");
   }
+
   const parsedSessionMap = AgentSessionMapSchema.safeParse(
     JSON.parse(sessionMap)
   );
@@ -57,14 +71,17 @@ export async function loadSessionMap(): Promise<AgentSessionMap> {
 }
 
 export async function saveSessionMap(): Promise<void> {
-  logger.log("saving session map to file: " + AGENT_SESSION_FILE);
+  const sessionFile = await getAgentSessionFile();
+  logger.log("saving session map to file: " + sessionFile);
+
   if (!GlobalSessionMap || Object.keys(GlobalSessionMap).length === 0) {
     logger.log("session map is empty, skipping save");
     return;
   }
-  logger.log("saving session map to file: " + AGENT_SESSION_FILE);
+
+  logger.log("saving session map to file: " + sessionFile);
   await fs.writeFile(
-    AGENT_SESSION_FILE,
+    sessionFile,
     JSON.stringify(GlobalSessionMap, null, 2),
     "utf8"
   );
