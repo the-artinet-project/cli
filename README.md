@@ -3,7 +3,9 @@
 An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
 
 <div align="center">
+  
   <iframe width="560" height="315" src="https://www.youtube.com/embed/c6Rgggigz40?si=D_IM3-1UzYKco4N_" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  
 </div>
 
 ## Installation
