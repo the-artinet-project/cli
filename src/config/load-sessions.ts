@@ -114,13 +114,13 @@ export async function addSession(
   agentId: string,
   session: AgentSession
 ): Promise<void> {
-  const sessionMap = await getSessionMap();
+  const sessionMap: AgentSessionMap = await getSessionMap();
   if (!sessionMap || Object.keys(sessionMap).length === 0) {
     logger.log("session map is empty, creating new session map");
     GlobalSessionMap = { [agentId]: [session] };
   } else {
     logger.log("session map is not empty, adding session to session map");
-    sessionMap[agentId].push(session);
+    sessionMap[agentId] = [...(sessionMap[agentId] ?? []), session];
     GlobalSessionMap = sessionMap;
   }
   logger.log(

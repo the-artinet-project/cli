@@ -40,7 +40,7 @@ function createRoutedExecutor(
     logger.log("agent[" + baseAgent.definition.name + "]: starting");
     // first we extract the user message
     //todo bug, on first invocation, the incoming message is included in the history.
-    //todo on second invocation, the incoming message is NOT included in the history.
+    //todo on second invocation, the incoming message is NOT included in the history(may be an sdk bug).
     const parts = getParts(context.command.message.parts);
     const message: string =
       parts.text ??
@@ -126,6 +126,7 @@ function createRoutedExecutor(
         },
         tools: baseAgent.definition.tools,
         agents: agents,
+        taskId: context.command.message.taskId ?? "",
         callbackFunction: logFunction,
       })
       .catch((error) => {

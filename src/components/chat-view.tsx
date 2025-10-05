@@ -1,6 +1,6 @@
 import { RuntimeAgent } from "../types/index.js";
 import { GlobalRouter } from "../global.js";
-import { useEffect, useState, memo, useMemo, useCallback } from "react";
+import { useEffect, useState, memo } from "react";
 import { useInput, Text, Box } from "ink";
 import { TextInput, StatusMessage, Alert, Spinner } from "@inkjs/ui";
 import { BaseProps } from "./base.js";
@@ -155,118 +155,114 @@ export const Chat: React.FC<SessionProps> = memo(
     );
 
     // Memoize the handleSubmit function to prevent TextInput re-renders
-    const handleSubmit = useCallback(
-      async (value: string) => {
-        if (value.trim()) {
-          setSession((currentSession) => [
-            ...currentSession,
-            { role: "user", content: value.trim() },
-          ]);
+    const handleSubmit = async (value: string) => {
+      if (value.trim()) {
+        setSession((currentSession) => [
+          ...currentSession,
+          { role: "user", content: value.trim() },
+        ]);
 
-          let sessionId = taskId;
-          if (!sessionId || sessionId === "") {
-            sessionId = uuidv4();
-            addSession(agent.definition.name, {
-              taskId: sessionId,
-              timestamp: new Date().toISOString(),
-            }).catch((error) => {
-              logger.error("Error adding session: ", error);
+        let sessionId = taskId;
+        if (!sessionId || sessionId === "") {
+          sessionId = uuidv4();
+          addSession(agent.definition.name, {
+            taskId: sessionId,
+            timestamp: new Date().toISOString(),
+          }).catch((error) => {
+            logger.error("Error adding session: ", error);
+          });
+          setTaskId(sessionId);
+        }
+
+        setIsLoading(true);
+        try {
+          const stream = GlobalRouter?.agents
+            ?.getAgent(agent.definition.name)
+            ?.streamMessage({
+              message: {
+                kind: "message",
+                role: "user",
+                messageId: uuidv4(),
+                taskId: sessionId,
+                contextId: sessionId,
+                parts: [{ kind: "text", text: value.trim() }],
+              },
             });
-            setTaskId(sessionId);
-          }
 
-          setIsLoading(true);
-          try {
-            const stream = GlobalRouter?.agents
-              ?.getAgent(agent.definition.name)
-              ?.streamMessage({
-                message: {
-                  kind: "message",
-                  role: "user",
-                  messageId: uuidv4(),
-                  taskId: sessionId,
-                  contextId: sessionId,
-                  parts: [{ kind: "text", text: value.trim() }],
-                },
-              });
-
-            if (stream) {
-              for await (const update of stream) {
-                if (update.kind === "task") {
-                  continue;
-                }
-                const parts = getParts(
-                  (update as Message)?.parts ??
-                    (update as TaskStatusUpdateEvent)?.status?.message?.parts ??
-                    (update as TaskArtifactUpdateEvent)?.artifact?.parts ??
-                    []
-                );
-
-                let content: string | React.JSX.Element = "";
-                if (parts.text) {
-                  content = formatMessage(parts.text);
-                } else if (parts.file) {
-                  content = parts.file.map((file) => file.bytes).join("\n");
-                } else if (parts.data) {
-                  content = parts.data
-                    .map((data) => JSON.stringify(data))
-                    .join("\n");
-                }
-
-                if (
-                  content &&
-                  content !== "" &&
-                  content !== "{}" &&
-                  content !== "[]"
-                ) {
-                  setSession((currentSession) => [
-                    ...currentSession,
-                    {
-                      role: "agent",
-                      content: content,
-                    },
-                  ]);
-                  continue;
-                }
-                await new Promise((resolve) => setTimeout(resolve, 1));
+          if (stream) {
+            for await (const update of stream) {
+              if (update.kind === "task") {
+                continue;
               }
-            } else {
-              setSession((currentSession) => [
-                ...currentSession,
-                {
-                  role: "system",
-                  content: (
-                    <Alert variant="error">
-                      Failed to get a response from the agent
-                    </Alert>
-                  ),
-                },
-              ]);
+              const parts = getParts(
+                (update as Message)?.parts ??
+                  (update as TaskStatusUpdateEvent)?.status?.message?.parts ??
+                  (update as TaskArtifactUpdateEvent)?.artifact?.parts ??
+                  []
+              );
+
+              let content: string | React.JSX.Element = "";
+              if (parts.text) {
+                content = formatMessage(parts.text);
+              } else if (parts.file) {
+                content = parts.file.map((file) => file.bytes).join("\n");
+              } else if (parts.data) {
+                content = parts.data
+                  .map((data) => JSON.stringify(data))
+                  .join("\n");
+              }
+
+              if (
+                content &&
+                content !== "" &&
+                content !== "{}" &&
+                content !== "[]"
+              ) {
+                setSession((currentSession) => [
+                  ...currentSession,
+                  {
+                    role: "agent",
+                    content: content,
+                  },
+                ]);
+                continue;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 1));
             }
-          } catch (error) {
+          } else {
             setSession((currentSession) => [
               ...currentSession,
               {
                 role: "system",
                 content: (
                   <Alert variant="error">
-                    {error instanceof Error
-                      ? error.message
-                      : JSON.stringify(error, null, 2)}
+                    Failed to get a response from the agent
                   </Alert>
                 ),
               },
             ]);
-          } finally {
-            setIsLoading(false);
           }
+        } catch (error) {
+          setSession((currentSession) => [
+            ...currentSession,
+            {
+              role: "system",
+              content: (
+                <Alert variant="error">
+                  {error instanceof Error
+                    ? error.message
+                    : JSON.stringify(error, null, 2)}
+                </Alert>
+              ),
+            },
+          ]);
+        } finally {
+          setIsLoading(false);
         }
-      },
-      [taskId, agent.definition.name]
-    ); // Dependencies for useCallback
+      }
+    };
 
     // Stable key for TextInput to prevent remounting
-    const inputKey = useMemo(() => `chat-input-${id}`, [id]);
 
     return (
       <>
@@ -304,7 +300,9 @@ export const Chat: React.FC<SessionProps> = memo(
 
             <Box
               marginTop={1}
-              borderStyle="round"
+              borderStyle="classic"
+              borderLeft={false}
+              borderRight={false}
               columnGap={1}
               flexDirection="row"
               alignItems="center"
@@ -313,8 +311,7 @@ export const Chat: React.FC<SessionProps> = memo(
               <Box flexDirection="row" columnGap={1}>
                 <Text>{">".padStart(2)} </Text>
                 <TextInput
-                  key={inputKey}
-                  defaultValue={""}
+                  key={`chat-input-${session.length}`}
                   isDisabled={isLoading}
                   onSubmit={handleSubmit}
                   placeholder="Type your message..."
