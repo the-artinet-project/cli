@@ -1,6 +1,6 @@
 /**
  * Copyright 2025 The Artinet Project
- * SPDX-License-Identifier: GPL-3.0-only
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -22,6 +22,7 @@ import { useInputContext } from "../contexts/InputContext.js";
 import { ToolView } from "./tool-view.js";
 import { Select } from "@inkjs/ui";
 import { TaskAndHistory, getParts } from "@artinet/sdk";
+import { configManager } from "../config/manager.js";
 
 function Item({ id, label }: { id: string; label: string }) {
   const { isActive } = useInputContext();
@@ -191,11 +192,12 @@ export const App: React.FC = () => {
   };
 
   return (
-    <Box flexDirection="column" height="100%">
+    <Box key="app-container" flexDirection="column" height="100%">
       {!isActive("chat") && renderHeader()}
-      <Box flexGrow={1} marginTop={1}>
+      <Box key="app-components-container" flexGrow={1} marginTop={1}>
         {isActive("app") && (
           <Box
+            key="app-details"
             flexDirection="row"
             columnGap={2}
             rowGap={1}
@@ -207,6 +209,11 @@ export const App: React.FC = () => {
             <Item id="app" label="Teams: browse teams" />
             <Text color="gray">|</Text>
             <Item id="app" label="Tools: view available tools" />
+            <Text color="gray">|</Text>
+            <Item
+              id="app"
+              label={`Config: ${configManager.getUserConfigDir()}`}
+            />
           </Box>
         )}
         {isActive("agent-list") && (

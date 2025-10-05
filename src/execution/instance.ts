@@ -102,8 +102,8 @@ function createRoutedExecutor(
     let agentCompleted = false;
     //then we connect to the router
     const response = router
-      .connect(
-        {
+      .connect({
+        message: {
           identifier:
             baseAgent.definition.model ??
             "0xf7dcee219e1a4027191508511c99ea64fe7202c71df416b5e5ed03cc2e6b386f",
@@ -124,10 +124,10 @@ function createRoutedExecutor(
             isFallbackAllowed: false,
           },
         },
-        baseAgent.definition.tools,
-        agents,
-        logFunction
-      )
+        tools: baseAgent.definition.tools,
+        agents: agents,
+        callbackFunction: logFunction,
+      })
       .catch((error) => {
         logger.error("error calling router: ", error);
         return (

@@ -10,6 +10,10 @@ const __dirname = dirname(__filename);
 
 export class ConfigManager {
   private readonly userConfigDir: string;
+  private mcpConfigPath: string = "";
+  private agentsConfigPath: string = "";
+  private sessionsConfigDir: string = "";
+  private sessionsConfigFilePath: string = "";
   private readonly bundledConfigDir: string;
   private _initialized = false;
 
@@ -40,26 +44,26 @@ export class ConfigManager {
       if (existsSync(mcpSource) && !existsSync(mcpDest)) {
         await cp(mcpSource, mcpDest);
       }
-
+      this.mcpConfigPath = mcpDest;
       // Copy agents directory if it doesn't exist
       const agentsSource = join(this.bundledConfigDir, "agents");
       const agentsDest = join(this.userConfigDir, "agents");
       if (existsSync(agentsSource) && !existsSync(agentsDest)) {
         await cp(agentsSource, agentsDest, { recursive: true });
       }
-
+      this.agentsConfigPath = agentsDest;
       // Create empty sessions directory
       const sessionsDir = join(this.userConfigDir, "sessions");
       if (!existsSync(sessionsDir)) {
         mkdirSync(sessionsDir, { recursive: true });
       }
-
+      this.sessionsConfigDir = sessionsDir;
       // Create empty agents-session.json file
       const agentsSessionFile = join(sessionsDir, "agents-session.json");
       if (!existsSync(agentsSessionFile)) {
         await writeFile(agentsSessionFile, "{}", "utf8");
       }
-
+      this.sessionsConfigFilePath = agentsSessionFile;
       console.log(`✅ Symphony config initialized`);
       console.log(`   Config: ${this.userConfigDir}`);
       console.log(
@@ -121,6 +125,22 @@ export class ConfigManager {
    */
   getUserConfigDir(): string {
     return this.userConfigDir;
+  }
+
+  getMcpConfigPath(): string {
+    return this.mcpConfigPath;
+  }
+
+  getAgentsConfigPath(): string {
+    return this.agentsConfigPath;
+  }
+
+  getSessionsConfigDir(): string {
+    return this.sessionsConfigDir;
+  }
+
+  getSessionsConfigFilePath(): string {
+    return this.sessionsConfigFilePath;
   }
 
   /**

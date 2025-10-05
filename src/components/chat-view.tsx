@@ -32,6 +32,7 @@ interface SessionProps extends BaseProps {
 }
 
 const formatMessage = (message: string): React.JSX.Element => {
+  logger.log("formatMessage: ", message);
   if (safeParse(message, ToolResponseSchema).success) {
     const toolResponse: ToolResponse = safeParse(
       message,
@@ -124,6 +125,7 @@ export const Chat: React.FC<SessionProps> = memo(
       }[]
     >(
       initialSession?.messages.map((message) => {
+        logger.log("propagating initial session message: ", message);
         return {
           role: message.role,
           content: formatMessage(message.content),
