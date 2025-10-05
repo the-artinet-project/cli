@@ -2,11 +2,11 @@
 
 An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
 
-<div align="center">
-[<img src="https://img.youtube.com/vi/TeKHki_UYd0/hqdefault.jpg" width="560" height="315"
-/>](https://www.youtube.com/embed/TeKHki_UYd0)
+[<div align="center">
+<img src="https://img.youtube.com/vi/TeKHki_UYd0/hqdefault.jpg" width="560" height="315"
+/>
 </div>
-
+](https://www.youtube.com/embed/TeKHki_UYd0)
 ## Installation
 
 ```bash
