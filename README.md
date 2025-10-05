@@ -111,4 +111,7 @@ You are a helpful assistant that can...
 
 ## License
 
-GPL-3.0
+Apache-2.0
+
+This library is meant to empower the community to create interoperable agent swarms, as such, it's licensed under an Apache-2.0 license.
+We reserve the right to convert the license to a GPLv3 license at any point, if its determined that derivatives of the library are being used outside the spirit of this repository.

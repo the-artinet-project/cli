@@ -4,6 +4,7 @@ import { existsSync, mkdirSync } from "fs";
 import { cp, writeFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { logger } from "../utils/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -64,11 +65,9 @@ export class ConfigManager {
         await writeFile(agentsSessionFile, "{}", "utf8");
       }
       this.sessionsConfigFilePath = agentsSessionFile;
-      console.log(`✅ Symphony config initialized`);
-      console.log(`   Config: ${this.userConfigDir}`);
-      console.log(
-        `   Edit your configs and restart Symphony to apply changes.`
-      );
+      logger.log(`✅ Symphony config initialized`);
+      logger.log(`   Config: ${this.userConfigDir}`);
+      logger.log(`   Edit your configs and restart Symphony to apply changes.`);
     }
 
     this._initialized = true;

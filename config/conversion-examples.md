@@ -60,12 +60,12 @@ skills:
   - id: performance-optimization
     name: Performance Optimization
     description: Implement caching strategies and identify performance bottlenecks
-tools: // Set the tools that the agent can use from the preconfigured tools in mcp.json
+tools: # Set the tools that the agent can use from the preconfigured tools in mcp.json
   - architecture-validator
   - api-designer
   - database-analyzer
   - performance-profiler
-teams: //Assign the agent to a team and give it a role (lead {can call team members}/member {can be called by the team lead})
+teams: # Assign the agent to a team and give it a role (lead {can call team members}/member {can be called by the team lead})
   - name: development-team
     role: lead
 ---
@@ -139,3 +139,9 @@ Service Discovery → API Contract → Data Model → Communication Patterns
 
 Always provide concrete examples and focus on practical implementation over theory.
 ```
+
+## Agencies:
+
+- [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents/)
+- [lst97](https://github.com/lst97/claude-code-sub-agents/tree/main)
+- [wshobson](https://github.com/wshobson/agents)

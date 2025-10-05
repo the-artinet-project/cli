@@ -1,7 +1,11 @@
 {
   "secure-filesystem-server": {
     "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/"]
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem",
+      "${XDG_DATA_HOME:-$HOME/.local/share}/"
+    ]
   },
   "mcp-fetch": {
     "command": "uvx",

@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/the-artinet-project/artinet-sdk"
+    "url": "https://github.com/the-artinet-project/cli"
   },
   "files": [
     "dist",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@artinet/types": "^0.0.4",
-    "@artinet/router": "^0.0.4",
+    "@artinet/router": "^0.0.5",
     "@artinet/sdk": "^0.5.7",
     "@inkjs/ui": "^2.0.0",
     "@modelcontextprotocol/sdk": "^1.19.1",
