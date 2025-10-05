@@ -30,7 +30,11 @@
     "multi agent system",
     "agent2agent",
     "modelcontextprotocol",
-    "mcp"
+    "mcp",
+    "swarm",
+    "ai swarms",
+    "agentic swarms",
+    "swarms"
   ],
   "type": "module",
   "main": "./dist/src/index.js",
