@@ -16,9 +16,13 @@ npm install -g @artinet/symphony
 symphony
 ```
 
+## Requirements
+
+- [Node.js](https://nodejs.org/en/download) ≥ 22.0.0
+
 ## Recommended
 
-- [Python](https://www.python.org/downloads/): 3.12.3^
+- [Python](https://www.python.org/downloads/)[Windows](https://apps.microsoft.com/detail/9NCVDN91XZQP): 3.12.3^
 - [uv](https://docs.astral.sh/uv/): [uvx](https://docs.astral.sh/uv/guides/tools/)
 
 ### Recommended for Default Agents
@@ -106,10 +110,6 @@ You are a helpful assistant that can...
 
 - Custom [IRouter](https://www.npmjs.com/package/@artinet/router?activeTab=readme) plugins.
 - Custom [Agent Executors](https://github.com/the-artinet-project/artinet-sdk).
-
-## Requirements
-
-- Node.js ≥ 22.0.0
 
 ## License
 

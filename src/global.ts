@@ -5,11 +5,8 @@ import { Team, RuntimeAgent } from "./types/index.js";
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { logger } from "./utils/logger.js";
 import { loadAndSortTools } from "./config/load-tools.js";
-import { logger as sdkLogger } from "@artinet/sdk";
 import { PatchedFileStore } from "./utils/storage-patch.js";
 import { configManager } from "./config/manager.js";
-
-sdkLogger.level = "silent";
 
 let GlobalSessions: PatchedFileStore | undefined;
 let GlobalRouter: LocalRouter | undefined;

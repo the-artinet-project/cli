@@ -1,7 +1,7 @@
 import { RuntimeAgent } from "../types/index.js";
 import { GlobalRouter } from "../global.js";
-import { useEffect, useState, memo } from "react";
-import { useInput, Text, Box } from "ink";
+import { useEffect, useState, memo, useCallback } from "react";
+import { useInput, Text, Box, Static } from "ink";
 import { TextInput, StatusMessage, Alert, Spinner } from "@inkjs/ui";
 import { BaseProps } from "./base.js";
 import { useInputContext } from "../contexts/InputContext.js";
@@ -32,7 +32,6 @@ interface SessionProps extends BaseProps {
 }
 
 const formatMessage = (message: string): React.JSX.Element => {
-  logger.log("formatMessage: ", message);
   if (safeParse(message, ToolResponseSchema).success) {
     const toolResponse: ToolResponse = safeParse(
       message,
@@ -53,7 +52,7 @@ const formatMessage = (message: string): React.JSX.Element => {
           {toolResponse.callToolResult.content?.map((content) =>
             content?.type === "text" ? (
               <Text color="whiteBright">
-                {content.text.slice(0, 150)}
+                {content.text.trim().slice(0, 150)}
                 {content.text.length > 150 ? "..." : ""}
               </Text>
             ) : undefined
@@ -76,15 +75,16 @@ const formatMessage = (message: string): React.JSX.Element => {
         rowGap={2}
       >
         <Text color={"grey"} bold italic>
-          {"📞 " + a2aResponse.uri} : {a2aResponse.directive.slice(0, 250)}
+          {"📞 " + a2aResponse.uri} :{" "}
+          {a2aResponse.directive.trim().slice(0, 250)}
           {a2aResponse.directive.length > 250 ? "..." : ""} {"->"}
         </Text>
         {a2aResponse.result &&
         a2aResponse.result !== "{}" &&
         a2aResponse.result !== "[]" &&
         a2aResponse.result !== "" ? (
-          <Text backgroundColor={"whiteBright"}>
-            {a2aResponse.result.slice(0, 500)}
+          <Text backgroundColor={"whiteBright"} color="black">
+            {a2aResponse.result.trim().slice(0, 500)}
             {a2aResponse.result.length > 500 ? "..." : ""}
           </Text>
         ) : (
@@ -94,7 +94,7 @@ const formatMessage = (message: string): React.JSX.Element => {
         )}
       </Box>
     );
-  } else return <Text color="brightWhite">{message}</Text>;
+  } else return <Text color="brightWhite">{message.trim()}</Text>;
 };
 const LoadingSpinner = memo(() => (
   <Box marginRight={2}>
@@ -108,6 +108,7 @@ export const Chat: React.FC<SessionProps> = memo(
     // onExit,
     sessionId,
     initialSession,
+
     onReturn,
     id = "chat",
   }) => {
@@ -125,7 +126,6 @@ export const Chat: React.FC<SessionProps> = memo(
       }[]
     >(
       initialSession?.messages.map((message) => {
-        logger.log("propagating initial session message: ", message);
         return {
           role: message.role,
           content: formatMessage(message.content),
@@ -143,8 +143,6 @@ export const Chat: React.FC<SessionProps> = memo(
     const { isActive } = useInputContext();
 
     useEffect(() => {}, [isActive, id, session.length]);
-
-    // Handle non-text input (escape to exit)
     useInput(
       (_, key) => {
         if (key.escape) {
@@ -155,151 +153,170 @@ export const Chat: React.FC<SessionProps> = memo(
     );
 
     // Memoize the handleSubmit function to prevent TextInput re-renders
-    const handleSubmit = async (value: string) => {
-      if (value.trim()) {
-        setSession((currentSession) => [
-          ...currentSession,
-          { role: "user", content: value.trim() },
-        ]);
+    const handleSubmit = useCallback(
+      async (value: string) => {
+        if (value.trim()) {
+          setSession((currentSession) => [
+            ...currentSession,
+            { role: "user", content: value.trim() },
+          ]);
 
-        let sessionId = taskId;
-        if (!sessionId || sessionId === "") {
-          sessionId = uuidv4();
-          addSession(agent.definition.name, {
-            taskId: sessionId,
-            timestamp: new Date().toISOString(),
-          }).catch((error) => {
-            logger.error("Error adding session: ", error);
-          });
-          setTaskId(sessionId);
-        }
-
-        setIsLoading(true);
-        try {
-          const stream = GlobalRouter?.agents
-            ?.getAgent(agent.definition.name)
-            ?.streamMessage({
-              message: {
-                kind: "message",
-                role: "user",
-                messageId: uuidv4(),
-                taskId: sessionId,
-                contextId: sessionId,
-                parts: [{ kind: "text", text: value.trim() }],
-              },
+          let sessionId = taskId;
+          if (!sessionId || sessionId === "") {
+            sessionId = uuidv4();
+            addSession(agent.definition.name, {
+              taskId: sessionId,
+              timestamp: new Date().toISOString(),
+            }).catch((error) => {
+              logger.error("Error adding session: ", error);
             });
+            setTaskId(sessionId);
+          }
 
-          if (stream) {
-            for await (const update of stream) {
-              if (update.kind === "task") {
-                continue;
-              }
-              const parts = getParts(
-                (update as Message)?.parts ??
-                  (update as TaskStatusUpdateEvent)?.status?.message?.parts ??
-                  (update as TaskArtifactUpdateEvent)?.artifact?.parts ??
-                  []
-              );
+          setIsLoading(true);
+          try {
+            const stream = GlobalRouter?.agents
+              ?.getAgent(agent.definition.name)
+              ?.streamMessage({
+                message: {
+                  kind: "message",
+                  role: "user",
+                  messageId: uuidv4(),
+                  taskId: sessionId,
+                  contextId: sessionId,
+                  parts: [{ kind: "text", text: value.trim() }],
+                },
+              });
 
-              let content: string | React.JSX.Element = "";
-              if (parts.text) {
-                content = formatMessage(parts.text);
-              } else if (parts.file) {
-                content = parts.file.map((file) => file.bytes).join("\n");
-              } else if (parts.data) {
-                content = parts.data
-                  .map((data) => JSON.stringify(data))
-                  .join("\n");
-              }
+            if (stream) {
+              for await (const update of stream) {
+                if (update.kind === "task") {
+                  continue;
+                }
+                const parts = getParts(
+                  (update as Message)?.parts ??
+                    (update as TaskStatusUpdateEvent)?.status?.message?.parts ??
+                    (update as TaskArtifactUpdateEvent)?.artifact?.parts ??
+                    []
+                );
 
-              if (
-                content &&
-                content !== "" &&
-                content !== "{}" &&
-                content !== "[]"
-              ) {
-                setSession((currentSession) => [
-                  ...currentSession,
-                  {
-                    role: "agent",
-                    content: content,
-                  },
-                ]);
-                continue;
+                let content: string | React.JSX.Element = "";
+                if (parts.text) {
+                  content = formatMessage(parts.text);
+                } else if (parts.file) {
+                  content = parts.file.map((file) => file.bytes).join("\n");
+                } else if (parts.data) {
+                  content = parts.data
+                    .map((data) => JSON.stringify(data))
+                    .join("\n");
+                }
+
+                if (
+                  content &&
+                  content !== "" &&
+                  content !== "{}" &&
+                  content !== "[]"
+                ) {
+                  setSession((currentSession) => [
+                    ...currentSession,
+                    {
+                      role: "agent",
+                      content: content,
+                    },
+                  ]);
+                  continue;
+                }
+                await new Promise((resolve) => setTimeout(resolve, 1));
               }
-              await new Promise((resolve) => setTimeout(resolve, 1));
+            } else {
+              setSession((currentSession) => [
+                ...currentSession,
+                {
+                  role: "system",
+                  content: (
+                    <Alert variant="error">
+                      Failed to get a response from the agent
+                    </Alert>
+                  ),
+                },
+              ]);
             }
-          } else {
+          } catch (error) {
             setSession((currentSession) => [
               ...currentSession,
               {
                 role: "system",
                 content: (
                   <Alert variant="error">
-                    Failed to get a response from the agent
+                    {error instanceof Error
+                      ? error.message
+                      : JSON.stringify(error, null, 2)}
                   </Alert>
                 ),
               },
             ]);
+          } finally {
+            setIsLoading(false);
           }
-        } catch (error) {
-          setSession((currentSession) => [
-            ...currentSession,
-            {
-              role: "system",
-              content: (
-                <Alert variant="error">
-                  {error instanceof Error
-                    ? error.message
-                    : JSON.stringify(error, null, 2)}
-                </Alert>
-              ),
-            },
-          ]);
-        } finally {
-          setIsLoading(false);
         }
-      }
-    };
+      },
+      [agent.definition.name, taskId, sessionId]
+    );
 
     // Stable key for TextInput to prevent remounting
 
     return (
       <>
         {isActive(id) && (
-          <Box flexDirection="column" padding={1} flexGrow={1}>
-            <Text color="whiteBright" bold>
-              Chat with {displayName}
-            </Text>
-
-            <Box marginTop={1} flexDirection="column" rowGap={1}>
-              {session.map((message, index) => (
-                <Box key={index} flexDirection="row" columnGap={2}>
-                  <Text
-                    key={message.role + index}
-                    color={message.role === "user" ? "grey" : "white"}
-                    bold
-                    underline={message.role === "user"}
-                    italic={message.role === "system"}
-                  >
-                    {message.role}:
-                    {/* {typeof message.content === "string"
+          <Box flexDirection="column" flexGrow={1}>
+            <Box marginTop={1} flexDirection="column">
+              <Static
+                items={
+                  isActive(id) ? session : [{ role: "system", content: "" }]
+                }
+                style={{
+                  rowGap: 1,
+                  overflow: "hidden",
+                  display: isActive(id) ? "flex" : "none",
+                }}
+                children={(
+                  message: {
+                    role: "user" | "agent" | "system";
+                    content: string | React.JSX.Element;
+                  },
+                  index: number
+                ) => {
+                  return (
+                    <Box
+                      key={"messageBox" + index}
+                      flexDirection="row"
+                      columnGap={2}
+                    >
+                      <Text
+                        key={"roleText" + index}
+                        color={message.role === "user" ? "grey" : "white"}
+                        bold
+                        underline={message.role === "user"}
+                        italic={message.role === "system"}
+                      >
+                        {message.role}:
+                        {/* {typeof message.content === "string"
                     ? message.role + ":" //only show role for text messages
                     : ""} */}
-                  </Text>
-                  {typeof message.content === "string" ? (
-                    <Text key={"content" + index} color="white">
-                      {message.content}
-                    </Text>
-                  ) : (
-                    message.content
-                  )}
-                </Box>
-              ))}
+                      </Text>
+                      {typeof message.content === "string" ? (
+                        <Text key={"contentText" + index} color="white">
+                          {message.content}
+                        </Text>
+                      ) : (
+                        message.content
+                      )}
+                    </Box>
+                  );
+                }}
+              ></Static>
             </Box>
-
             <Box
-              marginTop={1}
               borderStyle="classic"
               borderLeft={false}
               borderRight={false}
@@ -313,18 +330,17 @@ export const Chat: React.FC<SessionProps> = memo(
                 <TextInput
                   key={`chat-input-${session.length}`}
                   isDisabled={isLoading}
+                  onChange={undefined}
                   onSubmit={handleSubmit}
                   placeholder="Type your message..."
                 />
               </Box>
               {isLoading && <LoadingSpinner />}
             </Box>
-            <Box
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="center"
-              flexGrow={1}
-            >
+            <Box flexDirection="row" columnGap={2} alignItems="flex-start">
+              <Text color="whiteBright" bold>
+                Chatting with {displayName}:
+              </Text>
               <Text color="grey" bold>
                 *Type your message and Press [Enter] to send. Press [Escape] to
                 exit.

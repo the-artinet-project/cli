@@ -4,7 +4,7 @@
  */
 
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Session } from "@artinet/types";
 import { Box, Text, useInput, useApp } from "ink";
 import { RuntimeAgent, Team } from "../types/index.js";
@@ -30,8 +30,9 @@ function Item({ id, label }: { id: string; label: string }) {
 }
 
 async function getInitialSession(taskId: string): Promise<Session | undefined> {
-  const task: TaskAndHistory | undefined =
-    await GlobalSessions?.getState(taskId);
+  const task: TaskAndHistory | undefined = await GlobalSessions?.getState(
+    taskId
+  );
   if (
     !task ||
     !task.task ||
@@ -129,7 +130,7 @@ export const App: React.FC = () => {
     returnToCommon();
   }, []);
 
-  const renderHeader = () => {
+  const renderHeader = useMemo(() => {
     return (
       <Box
         flexDirection="column"
@@ -137,6 +138,7 @@ export const App: React.FC = () => {
         borderStyle="doubleSingle"
         borderColor="blackBright"
         flexWrap="nowrap"
+        marginTop={100}
       >
         <Text color="whiteBright" bold>
           👩 Symphony
@@ -156,7 +158,7 @@ export const App: React.FC = () => {
                   { label: "Tools", value: "tool-view" },
                 ]}
                 highlightText="blackBright"
-                onChange={(value) => {
+                onChange={(value: string) => {
                   switch (value) {
                     case "agent-list":
                       switchToComponent("agent-list");
@@ -189,11 +191,16 @@ export const App: React.FC = () => {
         </Box>
       </Box>
     );
-  };
+  }, [agents, teams, tools, isActive]);
 
   return (
-    <Box key="app-container" flexDirection="column" height="100%">
-      {!isActive("chat") && renderHeader()}
+    <Box
+      key="app-container"
+      flexDirection="column"
+      height="100%"
+      marginBottom={5}
+    >
+      {!isActive("chat") && renderHeader}
       <Box key="app-components-container" flexGrow={1} marginTop={1}>
         {isActive("app") && (
           <Box
@@ -220,7 +227,7 @@ export const App: React.FC = () => {
           <AgentView
             key={`agent-list`}
             title={`Agents`}
-            onSelect={(agent) => {
+            onSelect={(agent: RuntimeAgent) => {
               if (agent) {
                 setSelectedAgent(agent);
                 setSelectedTaskId(undefined);
@@ -247,7 +254,7 @@ export const App: React.FC = () => {
             key={`team-view`}
             teams={teams}
             title={`Teams`}
-            onSelect={(team) => {
+            onSelect={(team: Team) => {
               if (team.leadId) {
                 setSelectedAgent(agents[team.leadId]);
                 setSelectedTaskId("");

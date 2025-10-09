@@ -2,7 +2,6 @@
  * Copyright 2025 The Artinet Project
  * SPDX-License-Identifier: Apache-2.0
  */
-import { Command } from "commander";
 import React from "react";
 import { render } from "ink";
 import { App } from "../components/app.js";
@@ -14,9 +13,3 @@ export const launchManager = async () => {
   );
   await waitUntilExit();
 };
-
-export const managerCommand = new Command("manager")
-  .description("Launch the Agent Manager")
-  .action(async () => {
-    await launchManager();
-  });

@@ -1,12 +1,15 @@
 {
   "name": "@artinet/symphony",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.",
   "author": "artinet",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/the-artinet-project/cli"
+  },
+  "issues": {
+    "url": "https://github.com/the-artinet-project/cli/issues"
   },
   "files": [
     "dist",
@@ -50,21 +53,16 @@
   },
   "dependencies": {
     "@artinet/types": "^0.0.4",
-    "@artinet/router": "^0.0.5",
-    "@artinet/sdk": "^0.5.7",
+    "@artinet/router": "^0.0.7",
+    "@artinet/sdk": "^0.5.9",
     "@inkjs/ui": "^2.0.0",
     "@modelcontextprotocol/sdk": "^1.19.1",
-    "boxen": "^7.0.0",
     "chalk": "^5.0.0",
-    "commander": "^11.0.0",
     "fast-glob": "^3.3.3",
     "gray-matter": "^4.0.3",
     "ink": "^6.3.1",
-    "inquirer": "^9.0.0",
-    "ora": "^7.0.0",
     "p-limit": "^7.1.1",
     "react": "^19.2.0",
-    "table": "^6.8.0",
     "uuid": "^11.1.0",
     "yaml": "^2.8.1",
     "zod": "^3.23.8"
