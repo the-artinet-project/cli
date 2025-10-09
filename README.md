@@ -22,7 +22,7 @@ symphony
 
 ## Recommended
 
-- [Python](https://www.python.org/downloads/)[Windows](https://apps.microsoft.com/detail/9NCVDN91XZQP): 3.12.3^
+- [Python](https://www.python.org/downloads/)/[Windows](https://apps.microsoft.com/detail/9NCVDN91XZQP): 3.12.3^
 - [uv](https://docs.astral.sh/uv/): [uvx](https://docs.astral.sh/uv/guides/tools/)
 
 ### Recommended for Default Agents
