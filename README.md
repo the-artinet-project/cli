@@ -1,3 +1,12 @@
+
+[![Website](https://img.shields.io/badge/website-artinet.io-black)](https://artinet.io/)
+[![npm version](https://img.shields.io/npm/v/@artinet/symphony.svg)](https://www.npmjs.com/package/@artinet/symphony)
+[![npm downloads](https://img.shields.io/npm/dt/@artinet/symphony.svg)](https://www.npmjs.com/package/@artinet/symphony)
+[![Apache License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Known Vulnerabilities](https://snyk.io/test/npm/@artinet/symphony/badge.svg)](https://snyk.io/test/npm/@artinet/symphony)
+[![GitHub stars](https://img.shields.io/github/stars/the-artinet-project/cli?style=social)](https://github.com/the-artinet-project/cli/stargazers)
+[![Discord](https://dcbadge.limes.pink/api/server/DaxzSchmmX?style=flat)](https://dcbadge.limes.pink/api/server/DaxzSchmmX?style=flat)
+
 # Symphony
 
 An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
