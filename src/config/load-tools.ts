@@ -1,3 +1,8 @@
+/**
+ * Copyright 2025 The Artinet Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { createRequire } from "module";
 import { Config, ConfigSchema } from "@artinet/types";
 import { sortServersWithName } from "@artinet/router";

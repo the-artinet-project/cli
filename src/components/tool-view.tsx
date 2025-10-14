@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Box, Text, useInput } from "ink";
-import { BaseProps } from "./base.js";
+import { BaseProps } from "./lib/index.js";
 import { useInputContext } from "../contexts/InputContext.js";
 import { StdioServerParameters } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { GlobalTools } from "../global.js";

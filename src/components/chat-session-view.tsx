@@ -2,14 +2,14 @@
  * Copyright 2025 The Artinet Project
  * SPDX-License-Identifier: Apache-2.0
  */
+
 import React, { useEffect, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { AgentSession, RuntimeAgent } from "../types/index.js";
 import { getSessions } from "../config/load-sessions.js";
-import { BaseProps } from "./base.js";
+import { BaseProps } from "./lib/index.js";
 import { useInputContext } from "../contexts/InputContext.js";
 import { Select } from "@inkjs/ui";
-import { logger } from "../utils/logger.js";
 
 interface ChatSessionViewProps extends BaseProps {
   agent: RuntimeAgent;
@@ -35,7 +35,6 @@ export const ChatSessionView: React.FC<ChatSessionViewProps> = ({
   useEffect(() => {
     getSessionsList().then((_sessions) => {
       if (_sessions.length === 0) {
-        logger.log("no sessions found, exiting");
         onExit?.();
       }
       setSessions(_sessions);
@@ -85,7 +84,6 @@ export const ChatSessionView: React.FC<ChatSessionViewProps> = ({
                   }))}
                   highlightText="blackBright"
                   onChange={(value) => {
-                    logger.log("selected session: " + value);
                     onSelect?.(value);
                   }}
                   isDisabled={!isActive(id)}

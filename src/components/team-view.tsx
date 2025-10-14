@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Newline, Text, useInput } from "ink";
 import { StatusMessage } from "@inkjs/ui";
 import { Team } from "../types/index.js";
-import { BaseProps } from "./base.js";
+import { BaseProps } from "./lib/index.js";
 import { useInputContext } from "../contexts/InputContext.js";
 
 interface TeamViewProps extends BaseProps {

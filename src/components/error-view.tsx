@@ -7,7 +7,7 @@ import React, { useState } from "react";
 import { Box, Text, useInput, useApp, useFocus } from "ink";
 import { LoadError } from "../types/index.js";
 import path from "path";
-import { BaseProps } from "./base.js";
+import { BaseProps } from "./lib/index.js";
 
 interface ErrorDisplayProps extends BaseProps {
   errors: LoadError[];
@@ -48,16 +48,13 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   }
 
   // Group errors by type
-  const errorsByType = errors.reduce(
-    (acc, error) => {
-      if (!acc[error.filePath]) {
-        acc[error.filePath] = [];
-      }
-      acc[error.filePath].push(error);
-      return acc;
-    },
-    {} as Record<string, LoadError[]>
-  );
+  const errorsByType = errors.reduce((acc, error) => {
+    if (!acc[error.filePath]) {
+      acc[error.filePath] = [];
+    }
+    acc[error.filePath].push(error);
+    return acc;
+  }, {} as Record<string, LoadError[]>);
 
   return (
     <>

@@ -126,7 +126,9 @@ export const App: React.FC = () => {
     { isActive: isActive("app") }
   );
 
-  const handleReturn = useCallback(() => {
+  const handleChatReturn = useCallback(() => {
+    setInitialSession(undefined);
+    setSelectedTaskId(undefined);
     returnToCommon();
   }, []);
 
@@ -138,7 +140,6 @@ export const App: React.FC = () => {
         borderStyle="doubleSingle"
         borderColor="blackBright"
         flexWrap="nowrap"
-        marginTop={100}
       >
         <Text color="whiteBright" bold>
           👩 Symphony
@@ -194,12 +195,7 @@ export const App: React.FC = () => {
   }, [agents, teams, tools, isActive]);
 
   return (
-    <Box
-      key="app-container"
-      flexDirection="column"
-      height="100%"
-      marginBottom={5}
-    >
+    <Box key="app-container" flexDirection="column" height="99%">
       {!isActive("chat") && renderHeader}
       <Box key="app-components-container" flexGrow={1} marginTop={1}>
         {isActive("app") && (
@@ -245,7 +241,7 @@ export const App: React.FC = () => {
             agent={selectedAgent}
             sessionId={selectedTaskId}
             initialSession={initialSession}
-            onReturn={handleReturn}
+            onReturn={handleChatReturn}
             id="chat"
           />
         )}

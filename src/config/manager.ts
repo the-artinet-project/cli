@@ -1,3 +1,8 @@
+/**
+ * Copyright 2025 The Artinet Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { homedir } from "os";
 import { join } from "path";
 import { existsSync, mkdirSync } from "fs";

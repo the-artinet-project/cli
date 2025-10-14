@@ -1,3 +1,8 @@
+/**
+ * Copyright 2025 The Artinet Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { join, dirname } from "path";
 import fs from "fs/promises";
 import { logger } from "../utils/logger.js";
@@ -72,14 +77,11 @@ export async function loadSessionMap(): Promise<AgentSessionMap> {
 
 export async function saveSessionMap(): Promise<void> {
   const sessionFile = await getAgentSessionFile();
-  logger.log("saving session map to file: " + sessionFile);
 
   if (!GlobalSessionMap || Object.keys(GlobalSessionMap).length === 0) {
-    logger.log("session map is empty, skipping save");
     return;
   }
 
-  logger.log("saving session map to file: " + sessionFile);
   await fs.writeFile(
     sessionFile,
     JSON.stringify(GlobalSessionMap, null, 2),
@@ -100,31 +102,21 @@ export async function getSessionMap(): Promise<AgentSessionMap> {
 export async function getSessions(agentId: string): Promise<AgentSession[]> {
   let sessionMap = await getSessionMap();
   if (!sessionMap || Object.keys(sessionMap).length === 0) {
-    logger.log("session map is empty, creating new session map");
     return [];
   }
-  logger.log("session map: " + JSON.stringify(sessionMap));
-  logger.log(
-    "session map is not empty, returning sessions for agent: " + agentId
-  );
   return sessionMap[agentId] ?? [];
 }
 
-export async function addSession(
+export async function addConfigSession(
   agentId: string,
   session: AgentSession
 ): Promise<void> {
   const sessionMap: AgentSessionMap = await getSessionMap();
   if (!sessionMap || Object.keys(sessionMap).length === 0) {
-    logger.log("session map is empty, creating new session map");
     GlobalSessionMap = { [agentId]: [session] };
   } else {
-    logger.log("session map is not empty, adding session to session map");
     sessionMap[agentId] = [...(sessionMap[agentId] ?? []), session];
     GlobalSessionMap = sessionMap;
   }
-  logger.log(
-    "added session to session map: " + JSON.stringify(GlobalSessionMap)
-  );
   await saveSessionMap();
 }

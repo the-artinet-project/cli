@@ -2,6 +2,7 @@
  * Copyright 2025 The Artinet Project
  * SPDX-License-Identifier: Apache-2.0
  */
+
 import fs from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -153,7 +154,11 @@ export class AgentLoader {
 
             if (this.teams[team.name].leadId) {
               _errors.push(
-                `Multiple leads for team: ${team.name} ${this.teams[team.name].leadId} and ${agentId}\n - [ maintaining ${this.teams[team.name].leadId} as lead ]`
+                `Multiple leads for team: ${team.name} ${
+                  this.teams[team.name].leadId
+                } and ${agentId}\n - [ maintaining ${
+                  this.teams[team.name].leadId
+                } as lead ]`
               );
             } else {
               this.teams[team.name].leadId = agentId;

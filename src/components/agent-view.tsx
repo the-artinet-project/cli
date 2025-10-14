@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Text, useInput } from "ink";
 import { RuntimeAgent } from "../types/index.js";
 import { GlobalAgents } from "../global.js";
-import { BaseProps } from "./base.js";
+import { BaseProps } from "./lib/index.js";
 import { useInputContext } from "../contexts/InputContext.js";
 
 interface AgentViewProps extends BaseProps {
@@ -104,7 +104,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
           <Box marginTop={1}>
             <Text color="gray">
               {agents[selectedIndex] &&
-                `preview: ${agents[selectedIndex].definition.description.substring(0, 80)}...`}
+                `preview: ${agents[
+                  selectedIndex
+                ].definition.description.substring(0, 80)}...`}
             </Text>
           </Box>
         </Box>

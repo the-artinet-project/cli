@@ -1,5 +1,8 @@
+/**
+ * Copyright 2025 The Artinet Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import { v4 as uuidv4 } from "uuid";
-
 import {
   AgentEngine,
   Context,
@@ -7,11 +10,9 @@ import {
   TaskStatusUpdateEvent,
   getParts,
   Message,
-  TaskState,
 } from "@artinet/sdk";
 import { LocalRouter, logger } from "@artinet/router";
 import { Session } from "@artinet/types";
-
 import { AgentLoader } from "../config/index.js";
 import { RuntimeAgent } from "../types/index.js";
 
@@ -38,6 +39,7 @@ function createRoutedExecutor(
 ): AgentEngine {
   const agentExecutor: AgentEngine = async function* (context: Context) {
     logger.log("agent[" + baseAgent.definition.name + "]: starting");
+    const agentName: string = baseAgent.definition.name;
     // first we extract the user message
     //todo bug, on first invocation, the incoming message is included in the history.
     //todo on second invocation, the incoming message is NOT included in the history(may be an sdk bug).
@@ -46,14 +48,14 @@ function createRoutedExecutor(
       parts.text ??
       parts.file.map((file) => file.bytes).join("\n") ??
       parts.data.map((data) => JSON.stringify(data)).join("\n");
-    logger.log(
-      "agent[" + baseAgent.definition.name + "]: message recieved: ",
-      message
-    );
+    logger.log("agent[" + agentName + "]: message recieved: ", message);
+    const taskId =
+      context.State().task.id ?? context.command.message.taskId ?? uuidv4();
+    logger.log("agent[" + agentName + "]: taskId: ", taskId);
     //then we extract the session history
     //the user message is included in the history
     const history: Session = {
-      id: context.command.message.taskId ?? undefined,
+      id: taskId,
       messages:
         context
           .State()
@@ -80,28 +82,10 @@ function createRoutedExecutor(
           })
           .filter((item) => !(item as any).__skip) ?? [],
     };
-    logger.log("agent[" + baseAgent.definition.name + "]: history: ", history);
-    let messages: string[] = [];
-    const logFunction: (...args: any[]) => void = (...args: any[]) => {
-      messages.push(
-        args
-          .map((arg) => {
-            if (typeof arg === "object") {
-              return JSON.stringify(arg);
-            }
-            return arg.toString();
-          })
-          .join(" ") //hmmm? maybe not needed?
-      );
-      logger.log(
-        "agent[" + baseAgent.definition.name + "]: update recieved: ",
-        args
-      );
-    };
-    logger.log("agent[" + baseAgent.definition.name + "]: agents: ", agents);
-    let agentCompleted = false;
+    logger.log("agent[" + agentName + "]: history: ", history);
+    logger.log("agent[" + agentName + "]: agents: ", agents);
     //then we connect to the router
-    const response = router
+    const responseMessage = await router
       .connect({
         message: {
           identifier:
@@ -126,54 +110,26 @@ function createRoutedExecutor(
         },
         tools: baseAgent.definition.tools,
         agents: agents,
-        taskId: context.command.message.taskId ?? "",
-        callbackFunction: logFunction,
+        options: {
+          taskId: taskId,
+          abortSignal: context.signal,
+        },
       })
       .catch((error) => {
         logger.error("error calling router: ", error);
         return (
           "error calling agent: " + (error.message ?? JSON.stringify(error))
         );
-      })
-      .finally(() => {
-        agentCompleted = true;
       });
-
-    while (!agentCompleted || messages.length > 0) {
-      if (messages.length > 0) {
-        logger.log(
-          "agent[" + baseAgent.definition.name + "]: yielding update: ",
-          messages[0]
-        );
-        yield {
-          kind: "status-update",
-          taskId: context.command.message.taskId ?? "",
-          contextId: context.command.message.contextId ?? "",
-          status: {
-            state: TaskState.working,
-            message: {
-              kind: "message",
-              role: "agent",
-              messageId: uuidv4(),
-              parts: [{ text: messages.shift() ?? "", kind: "text" }],
-            },
-          },
-          final: false,
-        };
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1));
-    }
-    const responseText = await response;
-    logger.log(
-      "agent[" + baseAgent.definition.name + "]: response: ",
-      responseText
-    );
+    logger.log("agent[" + agentName + "]: response: ", responseMessage);
+    const contextId =
+      context.contextId ?? context.command.message.contextId ?? "";
     //then we yield the final task state
     try {
-      const taskHistory: TaskAndHistory = context.events.getState();
+      const taskHistory: TaskAndHistory = context.State();
       const updateEvent: TaskStatusUpdateEvent = {
-        taskId: taskHistory.task.id,
-        contextId: context.command.message.contextId ?? "",
+        taskId: taskId,
+        contextId: contextId,
         kind: "status-update",
         status: {
           state: "completed",
@@ -184,7 +140,7 @@ function createRoutedExecutor(
             role: "agent",
             parts: [
               {
-                text: responseText,
+                text: responseMessage,
                 kind: "text",
               },
             ],
@@ -192,10 +148,6 @@ function createRoutedExecutor(
         },
         final: true,
       };
-      logger.log(
-        "agent[" + baseAgent.definition.name + "]: yielding final state: ",
-        updateEvent
-      );
       yield updateEvent;
     } catch (error) {
       logger.error("error getting state: ", error);
@@ -210,7 +162,7 @@ export function createAgentExecutor(
   router: LocalRouter,
   baseAgent: RuntimeAgent
 ): AgentEngine {
-  //if the agent is a lead, we add all members to the router
+  //if the agent is a lead, we add all team members to the router
   const teamLead: string[] =
     baseAgent.definition.teams
       .filter((team) => team.role === "lead")
