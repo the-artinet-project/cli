@@ -9,7 +9,7 @@
 
 # Symphony
 
-An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
+An *experimental* interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
 
 
 https://github.com/user-attachments/assets/ea5ce501-9dfd-4327-999b-d3d24275d2a1
