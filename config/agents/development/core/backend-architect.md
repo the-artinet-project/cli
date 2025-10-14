@@ -15,9 +15,6 @@ skills:
   - id: api-development
     name: API Development
     description: Design and implement scalable APIs
-  - id: quality-assurance
-    name: Quality Assurance
-    description: Comprehensive testing and quality validation
 tools:
   - secure-filesystem-server
   - mcp-fetch

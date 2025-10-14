@@ -7,24 +7,18 @@ description:
 model: deepseek-ai/DeepSeek-R1
 version: 1.0.0
 skills:
-  - id: api-documenter
-    name: Api-Documenter
+  - id: document-api
+    name: Document API
     description:
       Create OpenAPI/Swagger specs, generate SDKs, and write developer
       documentation
-  - id: api-development
-    name: API Development
-    description: Design and implement scalable APIs
-  - id: quality-assurance
-    name: Quality Assurance
-    description: Comprehensive testing and quality validation
 tools:
   - secure-filesystem-server
   - mcp-fetch
   - sequential-thinking-server
   - memory-server
 teams:
-  - name: development
+  - name: documentation
     role: member
 ---
 
