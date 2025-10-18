@@ -21,7 +21,11 @@ const ToElement = memo(
   }) => {
     const contentKey = useMemo(() => createKey(baseKey, "content"), [baseKey]);
     if (typeof message === "string") {
-      return <Markdown key={contentKey}>{message}</Markdown>;
+      return (
+        <>
+          <Markdown key={contentKey}>{message}</Markdown>
+        </>
+      );
     }
     return message;
   }
@@ -98,12 +102,14 @@ export const SystemMessages = memo(
       >
         <ToElement baseKey={systemTileKey} message={message.content} />
         {index === messages.length - 1 && canDisplayMetadata(message) && (
-          <Markdown key={metadataKey} color="whiteBright">
-            <SystemMessageMetadata
-              key={systemMessageMetadataKey}
-              content={message.metadata?.content || ""}
-            />
-          </Markdown>
+          <>
+            <Markdown key={metadataKey} color="whiteBright">
+              <SystemMessageMetadata
+                key={systemMessageMetadataKey}
+                content={message.metadata?.content || ""}
+              />
+            </Markdown>
+          </>
         )}
       </Box>
     ));
@@ -193,106 +199,108 @@ export const Dashboard = memo(
       [runtimeAgent?.definition.teams]
     );
     return (
-      <Box
-        key={containerKey}
-        flexDirection="row"
-        flexShrink={0}
-        rowGap={1}
-        borderStyle="round"
-        borderColor="gray"
-        padding={1}
-        columnGap={2}
-        height="80%"
-        width="100%"
-        position="relative"
-      >
+      <>
         <Box
-          key={displayContainerKey}
-          flexDirection="column"
-          rowGap={2}
-          width="70%"
-          overflow="hidden"
-          height="100%"
-        >
-          <Box
-            key={titleContainerKey}
-            flexDirection="row"
-            width="100%"
-            columnGap={2}
-          >
-            <Text key={titleKey} color="whiteBright" bold>
-              Dashboard:
-            </Text>
-            {lastUserMessage && (
-              <ToElement
-                baseKey={userMessageContainerKey}
-                message={lastUserMessage.content}
-              />
-            )}
-          </Box>
-          <Spacer />
-          <Box
-            key={agentMessageContainerKey}
-            flexDirection="row"
-            columnGap={2}
-            alignItems="center"
-            width="100%"
-            height="100%"
-            justifyContent="flex-start"
-          >
-            {lastAgentMessage && (
-              <AgentResponse content={lastAgentMessage.content} />
-            )}
-          </Box>
-        </Box>
-        <Box
-          borderStyle="round"
-          borderColor="whiteBright"
-          key={systemMessagesContainerKey}
-          flexDirection="column"
-          rowGap={1}
-          width="30%"
-          height="100%"
-          overflow="hidden"
-          alignItems="stretch"
-          padding={1}
+          key={containerKey}
+          flexDirection="row"
           flexShrink={0}
-          flexGrow={0}
+          rowGap={1}
+          // borderStyle="round"
+          // borderColor="gray"
+          padding={1}
+          columnGap={2}
+          height="80%"
+          width="100%"
+          position="relative"
         >
           <Box
-            key={runtimeAgentContainerKey}
-            borderBottom={true}
-            borderLeft={false}
-            borderRight={false}
-            borderTop={false}
-            borderStyle={"classic"}
-            paddingBottom={1}
-            alignItems="flex-start"
+            key={displayContainerKey}
+            flexDirection="column"
+            rowGap={2}
+            width="70%"
+            overflow="hidden"
+            height="100%"
           >
-            {runtimeAgent && (
-              <Text key={runtimeAgentKey} color="whiteBright" bold>
-                Tools: {tools}
-                <Newline />
-                <Newline />
-                Teams: {teams}
+            <Box
+              key={titleContainerKey}
+              flexDirection="row"
+              width="100%"
+              columnGap={2}
+            >
+              <Text key={titleKey} color="whiteBright" bold>
+                Dashboard:
               </Text>
-            )}
+              {lastUserMessage && (
+                <ToElement
+                  baseKey={userMessageContainerKey}
+                  message={lastUserMessage.content}
+                />
+              )}
+            </Box>
+            <Spacer />
+            <Box
+              key={agentMessageContainerKey}
+              flexDirection="row"
+              columnGap={2}
+              alignItems="center"
+              width="100%"
+              height="100%"
+              justifyContent="flex-start"
+            >
+              {lastAgentMessage && (
+                <AgentResponse content={lastAgentMessage.content} />
+              )}
+            </Box>
           </Box>
-          {lastestSystemMessages && lastestSystemMessages.length !== 0 && (
-            <>
-              <Text key={systemTitleKey} color="whiteBright" bold>
-                Updates:
-              </Text>
-              <SystemMessages
-                messages={lastestSystemMessages}
-                createKeyCallback={createKeyCallback}
-              />
-            </>
-          )}
+          <Box
+            // borderStyle="classic"
+            // borderColor="whiteBright"
+            key={systemMessagesContainerKey}
+            flexDirection="column"
+            rowGap={1}
+            width="30%"
+            height="100%"
+            overflow="hidden"
+            alignItems="stretch"
+            padding={1}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            <Box
+              key={runtimeAgentContainerKey}
+              borderBottom={true}
+              borderLeft={false}
+              borderRight={false}
+              borderTop={false}
+              borderStyle={"classic"}
+              paddingBottom={1}
+              alignItems="flex-start"
+            >
+              {runtimeAgent && (
+                <Text key={runtimeAgentKey} color="whiteBright" bold>
+                  Tools: {tools}
+                  <Newline />
+                  <Newline />
+                  Teams: {teams}
+                </Text>
+              )}
+            </Box>
+            {lastestSystemMessages && lastestSystemMessages.length !== 0 && (
+              <>
+                <Text key={systemTitleKey} color="whiteBright" bold>
+                  Updates:
+                </Text>
+                <SystemMessages
+                  messages={lastestSystemMessages}
+                  createKeyCallback={createKeyCallback}
+                />
+              </>
+            )}
+            <Spacer />
+          </Box>
           <Spacer />
         </Box>
-        <Spacer />
-      </Box>
+      </>
     );
   }
 );
