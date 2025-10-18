@@ -5,3 +5,5 @@ export * from "./on-submit.js";
 export * from "./utils.js";
 export * from "./on-event.js";
 export * from "./display-types.js";
+export * from "./text-input/index.js";
+export * from "./spinner/index.js";

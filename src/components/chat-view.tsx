@@ -4,9 +4,8 @@
  */
 
 import { RuntimeAgent } from "../types/index.js";
-import { useEffect, useState, memo, useCallback, useMemo } from "react";
-import { useInput, Text, Box, Spacer /*Spacer*/ } from "ink";
-import { TextInput, Spinner } from "@inkjs/ui";
+import { useState, memo, useCallback, useMemo } from "react";
+import { useInput, Box } from "ink";
 import { BaseProps } from "./lib/index.js";
 import { useInputContext } from "../contexts/InputContext.js";
 import { State, Update } from "@artinet/sdk";
@@ -19,6 +18,7 @@ import {
   SessionView,
   Dashboard,
 } from "./lib/index.js";
+import { ChatInput } from "./lib/chat-input.js";
 
 interface SessionProps extends BaseProps {
   agent: RuntimeAgent;
@@ -27,12 +27,6 @@ interface SessionProps extends BaseProps {
   onExit?: () => void;
   onReturn?: () => void;
 }
-
-const LoadingSpinner = memo(() => (
-  <Box marginRight={2}>
-    <Spinner type="boxBounce2" />
-  </Box>
-));
 
 export const Chat: React.FC<SessionProps> = memo(
   ({ agent, sessionId, initialSession, onReturn, id = "chat" }) => {
@@ -58,7 +52,6 @@ export const Chat: React.FC<SessionProps> = memo(
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const { isActive } = useInputContext();
 
-    useEffect(() => {}, [isActive, id, session.length]);
     useInput(
       (_, key) => {
         if (key.escape) {
@@ -91,45 +84,26 @@ export const Chat: React.FC<SessionProps> = memo(
         ),
       [taskId, agent, handleEvent]
     );
-
+    const chatInputProps = useMemo(
+      () => ({
+        displayName,
+        sessionLength: session.length,
+        isDisabled: isLoading,
+      }),
+      [displayName, session.length, isLoading]
+    );
     return (
       <>
         {isActive(id) && (
-          <Box flexDirection="column" flexGrow={0} rowGap={1} height="100%">
-            {Dashboard(session, agent)}
-            <Spacer />
-            <Box flexDirection="column" flexGrow={1}>
-              <Box
-                borderStyle="classic"
-                borderLeft={false}
-                borderRight={false}
-                columnGap={1}
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Box flexDirection="row" columnGap={2}>
-                  <Text>{">"} </Text>
-                  <TextInput
-                    key={`chat-input-${session.length}`}
-                    isDisabled={isLoading}
-                    onChange={undefined}
-                    onSubmit={handleSubmit}
-                    placeholder="Type your message..."
-                  />
-                </Box>
-                {isLoading && <LoadingSpinner />}
-              </Box>
-              <Box flexDirection="row" columnGap={2} alignItems="flex-start">
-                <Text color="whiteBright" bold>
-                  Chatting with {displayName}:
-                </Text>
-                <Text color="grey" bold>
-                  *Type your message and Press [Enter] to send. Press [Escape]
-                  to exit.
-                </Text>
-              </Box>
-            </Box>
+          <Box
+            flexDirection="column"
+            flexGrow={0}
+            rowGap={1}
+            height="100%"
+            overflow="hidden"
+          >
+            <Dashboard session={session} runtimeAgent={agent} />
+            <ChatInput {...chatInputProps} onSubmit={handleSubmit} />
           </Box>
         )}
       </>

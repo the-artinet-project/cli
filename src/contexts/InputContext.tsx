@@ -3,7 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from "react";
 
 interface InputContextType {
   activeComponent: string;
@@ -18,18 +25,24 @@ export const InputProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [activeComponent, setActiveComponent] = useState("app");
 
-  const isActive = (componentId: string) => {
-    return activeComponent === componentId;
-  };
+  const isActive = useCallback(
+    (componentId: string) => {
+      return activeComponent === componentId;
+    },
+    [activeComponent]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      activeComponent,
+      setActiveComponent,
+      isActive,
+    }),
+    [activeComponent, isActive]
+  );
 
   return (
-    <InputContext.Provider
-      value={{
-        activeComponent,
-        setActiveComponent,
-        isActive,
-      }}
-    >
+    <InputContext.Provider value={contextValue}>
       {children}
     </InputContext.Provider>
   );

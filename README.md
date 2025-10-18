@@ -1,4 +1,3 @@
-
 [![Website](https://img.shields.io/badge/website-artinet.io-black)](https://artinet.io/)
 [![npm version](https://img.shields.io/npm/v/@artinet/symphony.svg)](https://www.npmjs.com/package/@artinet/symphony)
 [![npm downloads](https://img.shields.io/npm/dt/@artinet/symphony.svg)](https://www.npmjs.com/package/@artinet/symphony)
@@ -29,7 +28,8 @@ symphony
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/download) ≥ 22.0.0
+- [Node.js](https://nodejs.org/en/download) ≥ 18.9.1
+  - Recommended: 20 || ≥ 22
 
 ## Recommended
 

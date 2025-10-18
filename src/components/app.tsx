@@ -96,13 +96,16 @@ export const App: React.FC = () => {
   //   }
   // };
 
-  const returnToCommon = () => {
+  const returnToCommon = useCallback(() => {
     setActiveComponent("app");
-  };
+  }, [setActiveComponent]);
 
-  const switchToComponent = (componentId: string) => {
-    setActiveComponent(componentId);
-  };
+  const switchToComponent = useCallback(
+    (componentId: string) => {
+      setActiveComponent(componentId);
+    },
+    [setActiveComponent]
+  );
 
   useInput(
     (input, key) => {
@@ -130,7 +133,51 @@ export const App: React.FC = () => {
     setInitialSession(undefined);
     setSelectedTaskId(undefined);
     returnToCommon();
-  }, []);
+  }, [returnToCommon]);
+  const handleAgentSelect = useCallback(
+    (agent: RuntimeAgent) => {
+      if (agent) {
+        setSelectedAgent(agent);
+        setSelectedTaskId(undefined);
+        setInitialSession(undefined);
+        switchToComponent("chat-sessions");
+      }
+    },
+    [switchToComponent]
+  );
+
+  const handleTeamSelect = useCallback(
+    (team: Team) => {
+      if (team.leadId) {
+        setSelectedAgent(agents[team.leadId]);
+        setSelectedTaskId("");
+        setInitialSession(undefined);
+        switchToComponent("chat-sessions");
+      }
+    },
+    [agents, switchToComponent]
+  );
+
+  const handleSessionSelect = useCallback(
+    async (taskId: string | undefined) => {
+      if (taskId) {
+        setSelectedTaskId(taskId);
+        setInitialSession(await getInitialSession(taskId));
+        switchToComponent("chat");
+      } else {
+        setSelectedTaskId(undefined);
+        setInitialSession(undefined);
+        switchToComponent("chat");
+      }
+    },
+    [switchToComponent]
+  );
+
+  const handleSessionExit = useCallback(() => {
+    setInitialSession(undefined);
+    setSelectedTaskId(undefined);
+    switchToComponent("chat");
+  }, [switchToComponent]);
 
   const renderHeader = useMemo(() => {
     return (
@@ -192,10 +239,14 @@ export const App: React.FC = () => {
         </Box>
       </Box>
     );
-  }, [agents, teams, tools, isActive]);
+  }, [agents, teams, tools, isActive("app")]);
 
+  const configDir = useMemo(
+    () => configManager.getUserConfigDir(),
+    [configManager]
+  );
   return (
-    <Box key="app-container" flexDirection="column" height="99%">
+    <Box key="app-container" flexDirection="column" height="100%">
       {!isActive("chat") && renderHeader}
       <Box key="app-components-container" flexGrow={1} marginTop={1}>
         {isActive("app") && (
@@ -213,25 +264,15 @@ export const App: React.FC = () => {
             <Text color="gray">|</Text>
             <Item id="app" label="Tools: view available tools" />
             <Text color="gray">|</Text>
-            <Item
-              id="app"
-              label={`Config: ${configManager.getUserConfigDir()}`}
-            />
+            <Item id="app" label={`Config: ${configDir}`} />
           </Box>
         )}
         {isActive("agent-list") && (
           <AgentView
             key={`agent-list`}
             title={`Agents`}
-            onSelect={(agent: RuntimeAgent) => {
-              if (agent) {
-                setSelectedAgent(agent);
-                setSelectedTaskId(undefined);
-                setInitialSession(undefined);
-                switchToComponent("chat-sessions");
-              }
-            }}
-            onExit={() => returnToCommon()}
+            onSelect={handleAgentSelect}
+            onExit={returnToCommon}
             id="agent-list"
           />
         )}
@@ -250,15 +291,8 @@ export const App: React.FC = () => {
             key={`team-view`}
             teams={teams}
             title={`Teams`}
-            onSelect={(team: Team) => {
-              if (team.leadId) {
-                setSelectedAgent(agents[team.leadId]);
-                setSelectedTaskId("");
-                setInitialSession(undefined);
-                switchToComponent("chat-sessions");
-              }
-            }}
-            onExit={() => returnToCommon()}
+            onSelect={handleTeamSelect}
+            onExit={returnToCommon}
             id="team-view"
           />
         )}
@@ -266,7 +300,7 @@ export const App: React.FC = () => {
           <ToolView
             key={`tool-view`}
             title={`Tools`}
-            onExit={() => returnToCommon()}
+            onExit={returnToCommon}
             id="tool-view"
           />
         )}
@@ -274,22 +308,8 @@ export const App: React.FC = () => {
           <ChatSessionView
             key={`chat-sessions`}
             agent={selectedAgent}
-            onSelect={async (taskId: string | undefined) => {
-              if (taskId) {
-                setSelectedTaskId(taskId);
-                setInitialSession(await getInitialSession(taskId));
-                switchToComponent("chat");
-              } else {
-                setSelectedTaskId(undefined);
-                setInitialSession(undefined);
-                switchToComponent("chat");
-              }
-            }}
-            onExit={() => {
-              setInitialSession(undefined);
-              setSelectedTaskId(undefined);
-              switchToComponent("chat");
-            }}
+            onSelect={handleSessionSelect}
+            onExit={handleSessionExit}
             id="chat-sessions"
           />
         )}
