@@ -9,16 +9,23 @@ import { SessionView, MessageView } from "./display-types.js";
 import { createKey } from "./utils.js";
 import { RuntimeAgent } from "../../types/index.js";
 import Markdown from "./markdown-text.js";
+import { logger } from "../../utils/logger.js";
 
-function toElement(
-  baseKey: string,
-  message: MessageView["content"]
-): React.JSX.Element {
-  if (typeof message === "string") {
-    return <Markdown key={createKey(baseKey, "content")}>{message}</Markdown>;
+const ToElement = memo(
+  ({
+    baseKey,
+    message,
+  }: {
+    baseKey: string;
+    message: MessageView["content"];
+  }) => {
+    const contentKey = useMemo(() => createKey(baseKey, "content"), [baseKey]);
+    if (typeof message === "string") {
+      return <Markdown key={contentKey}>{message}</Markdown>;
+    }
+    return message;
   }
-  return message;
-}
+);
 
 function canDisplayMetadata(message: MessageView): boolean {
   return (
@@ -32,24 +39,34 @@ function canDisplayMetadata(message: MessageView): boolean {
     false
   );
 }
-const AgentResponse = memo(
+export const AgentResponse = memo(
   ({ content }: { content: MessageView["content"] }) => {
+    const agentResponseContainerKey = useMemo(
+      () =>
+        createKey("agent-response-container", content.toString().slice(0, 10)),
+      []
+    );
     return (
       <Box
         flexGrow={0}
         flexShrink={0}
         overflow="hidden"
-        key={createKey(
-          "agent-response-container",
-          content.toString().slice(0, 10)
-        )}
+        key={agentResponseContainerKey}
       >
-        {toElement("agent-response", content)}
+        <ToElement baseKey="agent-response" message={content} />
       </Box>
     );
   }
 );
-const SystemMessages = memo(
+const SystemMessageMetadata = memo(({ content }: { content: string }) => {
+  return (
+    <>
+      {content.slice(0, 1000).replaceAll("\n", " ")}
+      {content?.length && content?.length > 1000 && "..."}
+    </>
+  );
+});
+export const SystemMessages = memo(
   ({
     messages,
     createKeyCallback,
@@ -57,9 +74,19 @@ const SystemMessages = memo(
     messages: MessageView[];
     createKeyCallback: (...parts: string[]) => string;
   }) => {
+    const systemMessageKey = useMemo(
+      () => createKeyCallback("systemMessage"),
+      []
+    );
+    const systemTileKey = useMemo(() => createKeyCallback("systemTile"), []);
+    const metadataKey = useMemo(() => createKeyCallback("metadata"), []);
+    const systemMessageMetadataKey = useMemo(
+      () => createKeyCallback("systemMessageMetadata"),
+      []
+    );
     return messages.map((message, index) => (
       <Box
-        key={createKeyCallback("systemMessage", index.toString())}
+        key={systemMessageKey}
         flexDirection="column"
         rowGap={1}
         overflow="hidden"
@@ -69,19 +96,13 @@ const SystemMessages = memo(
         width="100%"
         justifyContent="center"
       >
-        {toElement(
-          createKeyCallback("systemTile", index.toString()),
-          message.content
-        )}
+        <ToElement baseKey={systemTileKey} message={message.content} />
         {index === messages.length - 1 && canDisplayMetadata(message) && (
-          <Markdown
-            key={createKeyCallback("metadata", index.toString())}
-            color="whiteBright"
-          >
-            {message.metadata?.content.slice(0, 1000).replaceAll("\n", " ")}
-            {message.metadata?.content?.length &&
-              message.metadata?.content?.length > 1000 &&
-              "..."}
+          <Markdown key={metadataKey} color="whiteBright">
+            <SystemMessageMetadata
+              key={systemMessageMetadataKey}
+              content={message.metadata?.content || ""}
+            />
           </Markdown>
         )}
       </Box>
@@ -96,6 +117,7 @@ export const Dashboard = memo(
     session: SessionView;
     runtimeAgent?: RuntimeAgent;
   }): React.JSX.Element => {
+    logger.info("Dashboard", { session, runtimeAgent });
     const lastAgentMessage = useMemo(
       () => session.filter((message) => message.role === "agent").at(-1),
       [session]
@@ -123,9 +145,56 @@ export const Dashboard = memo(
       (...parts: string[]) => createKey(baseKey, ...parts),
       [baseKey]
     );
+    const containerKey = useMemo(() => createKeyCallback("container"), []);
+    const displayContainerKey = useMemo(
+      () => createKeyCallback("displayContainer"),
+      []
+    );
+    const titleContainerKey = useMemo(
+      () => createKeyCallback("titleContainer"),
+      []
+    );
+    const titleKey = useMemo(() => createKeyCallback("title"), []);
+    const userMessageContainerKey = useMemo(
+      () => createKeyCallback("userMessageContainer"),
+      []
+    );
+    const agentMessageContainerKey = useMemo(
+      () => createKeyCallback("agentMessageContainer"),
+      []
+    );
+    const systemMessagesContainerKey = useMemo(
+      () => createKeyCallback("systemMessagesContainer"),
+      []
+    );
+    const runtimeAgentContainerKey = useMemo(
+      () => createKeyCallback("runtimeAgentContainer"),
+      []
+    );
+    const runtimeAgentKey = useMemo(
+      () => createKeyCallback("runtimeAgent"),
+      []
+    );
+    const systemTitleKey = useMemo(() => createKeyCallback("systemTitle"), []);
+
+    const tools = useMemo(
+      () =>
+        runtimeAgent?.definition.tools
+          .join(", ")
+          .replaceAll("-", " ")
+          .replaceAll("_", " ") || "None",
+      [runtimeAgent?.definition.tools]
+    );
+    const teams = useMemo(
+      () =>
+        runtimeAgent?.definition.teams
+          .map((team) => team.name.replaceAll("-", " ").replaceAll("_", " "))
+          .join(", ") || "None",
+      [runtimeAgent?.definition.teams]
+    );
     return (
       <Box
-        key={createKeyCallback("container")}
+        key={containerKey}
         flexDirection="row"
         flexShrink={0}
         rowGap={1}
@@ -134,9 +203,11 @@ export const Dashboard = memo(
         padding={1}
         columnGap={2}
         height="80%"
+        width="100%"
+        position="relative"
       >
         <Box
-          key={createKeyCallback("displayContainer")}
+          key={displayContainerKey}
           flexDirection="column"
           rowGap={2}
           width="70%"
@@ -144,26 +215,29 @@ export const Dashboard = memo(
           height="100%"
         >
           <Box
-            key={createKeyCallback("titleContainer")}
+            key={titleContainerKey}
             flexDirection="row"
+            width="100%"
             columnGap={2}
           >
-            <Text key={createKeyCallback("title")} color="whiteBright" bold>
+            <Text key={titleKey} color="whiteBright" bold>
               Dashboard:
             </Text>
-            {lastUserMessage &&
-              toElement(
-                createKeyCallback("userMessage"),
-                lastUserMessage.content
-              )}
+            {lastUserMessage && (
+              <ToElement
+                baseKey={userMessageContainerKey}
+                message={lastUserMessage.content}
+              />
+            )}
           </Box>
           <Spacer />
           <Box
-            key={createKeyCallback("agentMessageContainer")}
+            key={agentMessageContainerKey}
             flexDirection="row"
             columnGap={2}
             alignItems="center"
             width="100%"
+            height="100%"
             justifyContent="flex-start"
           >
             {lastAgentMessage && (
@@ -174,16 +248,19 @@ export const Dashboard = memo(
         <Box
           borderStyle="round"
           borderColor="whiteBright"
-          key={createKeyCallback("systemContainer")}
+          key={systemMessagesContainerKey}
           flexDirection="column"
           rowGap={1}
           width="30%"
+          height="100%"
           overflow="hidden"
           alignItems="stretch"
           padding={1}
+          flexShrink={0}
+          flexGrow={0}
         >
           <Box
-            key={createKeyCallback("runtimeAgentContainer")}
+            key={runtimeAgentContainerKey}
             borderBottom={true}
             borderLeft={false}
             borderRight={false}
@@ -193,34 +270,17 @@ export const Dashboard = memo(
             alignItems="flex-start"
           >
             {runtimeAgent && (
-              <Text
-                key={createKeyCallback("runtimeAgent")}
-                color="whiteBright"
-                bold
-              >
-                Tools:{" "}
-                {runtimeAgent.definition.tools
-                  .join(", ")
-                  .replaceAll("-", " ")
-                  .replaceAll("_", " ") || "None"}
+              <Text key={runtimeAgentKey} color="whiteBright" bold>
+                Tools: {tools}
                 <Newline />
                 <Newline />
-                Teams:{" "}
-                {runtimeAgent.definition.teams
-                  .map((team) =>
-                    team.name.replaceAll("-", " ").replaceAll("_", " ")
-                  )
-                  .join(", ") || "None"}
+                Teams: {teams}
               </Text>
             )}
           </Box>
           {lastestSystemMessages && lastestSystemMessages.length !== 0 && (
             <>
-              <Text
-                key={createKeyCallback("systemTitle")}
-                color="whiteBright"
-                bold
-              >
+              <Text key={systemTitleKey} color="whiteBright" bold>
                 Updates:
               </Text>
               <SystemMessages

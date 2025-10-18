@@ -92,15 +92,21 @@ export const Chat: React.FC<SessionProps> = memo(
       }),
       [displayName, session.length, isLoading]
     );
+    const chatInputContainerKey = useMemo(
+      () => `chat-input-container-${session.length.toString()}`,
+      [session.length]
+    );
     return (
       <>
         {isActive(id) && (
           <Box
+            key={chatInputContainerKey}
             flexDirection="column"
             flexGrow={0}
             rowGap={1}
             height="100%"
             overflow="hidden"
+            width="100%"
           >
             <Dashboard session={session} runtimeAgent={agent} />
             <ChatInput {...chatInputProps} onSubmit={handleSubmit} />
