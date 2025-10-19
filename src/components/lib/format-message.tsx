@@ -10,6 +10,7 @@ import { AgentResponse, AgentResponseSchema } from "@artinet/types";
 import { MessageView } from "./display-types.js";
 import { createKey } from "./utils.js";
 import Markdown from "./markdown-text.js";
+// import { logger } from "../../utils/logger.js";
 
 export function extractResultContent(
   response: AgentResponse | ToolResponse
@@ -102,6 +103,7 @@ export const formatMessage = (
     ).data;
     return createAgentMessage(a2aResponse);
   } else {
+    // logger.log("formatMessage", message);
     const isUser = role === "user";
     return (
       <Markdown
@@ -110,8 +112,8 @@ export const formatMessage = (
         key={createKey("message", message.slice(0, 10))}
         color="brightWhite"
       >
-        {message.slice(0, 5000).trim()}
-        {message.length > 5000 ? "..." : ""}
+        {message.slice(0, 3250).trim()}
+        {message.length > 3250 ? "..." : ""}
       </Markdown>
     );
   }

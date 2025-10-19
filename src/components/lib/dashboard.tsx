@@ -9,6 +9,7 @@ import { SessionView, MessageView } from "./display-types.js";
 import { createKey } from "./utils.js";
 import { RuntimeAgent } from "../../types/index.js";
 import Markdown from "./markdown-text.js";
+// import { logger } from "../../utils/logger.js";
 
 const ToElement = memo(
   ({
@@ -52,7 +53,7 @@ export const AgentResponse = memo(
     return (
       <Box
         flexGrow={0}
-        flexShrink={0}
+        flexShrink={1}
         overflow="hidden"
         key={agentResponseContainerKey}
       >

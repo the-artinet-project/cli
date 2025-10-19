@@ -32,6 +32,7 @@ export function onEvent({
   update: Update;
   setSession: React.Dispatch<React.SetStateAction<SessionView>>;
 }) {
+  // logger.log("onEvent", JSON.stringify({ state, update }, null, 2));
   try {
     if (!state && !update) {
       return;

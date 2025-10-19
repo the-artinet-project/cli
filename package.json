@@ -1,6 +1,6 @@
 {
   "name": "@artinet/symphony",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.",
   "author": "artinet",
   "license": "Apache-2.0",
