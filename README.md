@@ -8,11 +8,9 @@
 
 # Symphony
 
-An *experimental* interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
-
+An _experimental_ interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
 
 https://github.com/user-attachments/assets/ea5ce501-9dfd-4327-999b-d3d24275d2a1
-
 
 ## Installation
 
@@ -42,6 +40,7 @@ symphony
 - [Official Filesystem MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem#filesystem-mcp-server): `npx -y @modelcontextprotocol/server-filesystem`
 - [Official Memory MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/memory#knowledge-graph-memory-server): `npx -y "@modelcontextprotocol/server-memory"`
 - [Official Thinking MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking#sequential-thinking-mcp-server): `npx -y @modelcontextprotocol/server-sequential-thinking`
+- [@artinet/bash-mcp](https://github.com/the-artinet-project/mcp/tree/main/servers/bash): `npx -y @artinet/bash-mcp`
 
 ## Config
 

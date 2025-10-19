@@ -12,6 +12,7 @@ skills:
 tools:
   - secure-filesystem-server
   - sequential-thinking-server
+  - bash-mcp-server
 teams:
   - name: development
     role: member

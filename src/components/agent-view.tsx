@@ -71,26 +71,30 @@ export const AgentView: React.FC<AgentViewProps> = ({
             menu
           </Text>
           <Box marginTop={1} flexDirection="column">
-            {agents.map((agent, index) => {
-              const isSelected = index === selectedIndex;
-              const isMarked =
-                selectedAgent?.definition.id === agents[index].definition.id;
+            {agents
+              .sort((a, b) =>
+                a.definition.name.localeCompare(b.definition.name)
+              )
+              .map((agent, index) => {
+                const isSelected = index === selectedIndex;
+                const isMarked =
+                  selectedAgent?.definition.id === agents[index].definition.id;
 
-              return (
-                <Box key={agent.definition.id} flexDirection="row">
-                  <Text
-                    color={isSelected ? "black" : "brightWhite"}
-                    backgroundColor={isSelected ? "gray" : undefined}
-                  >
-                    {isMarked ? "✓ " : "  "}
-                    {agent.definition.id?.padEnd(25)}
-                    {agent.definition.name.padEnd(30)}
-                    {agent.definition.teams.length} teams |{" "}
-                    {agent.definition.tools.length} tools
-                  </Text>
-                </Box>
-              );
-            })}
+                return (
+                  <Box key={agent.definition.id} flexDirection="row">
+                    <Text
+                      color={isSelected ? "black" : "brightWhite"}
+                      backgroundColor={isSelected ? "gray" : undefined}
+                    >
+                      {isMarked ? "✓ " : "  "}
+                      {agent.definition.id?.padEnd(25)}
+                      {agent.definition.name.padEnd(30)}
+                      {agent.definition.teams.length} teams |{" "}
+                      {agent.definition.tools.length} tools
+                    </Text>
+                  </Box>
+                );
+              })}
           </Box>
 
           {selectedAgent && (

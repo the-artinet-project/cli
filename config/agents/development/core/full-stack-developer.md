@@ -20,6 +20,7 @@ tools:
   - mcp-fetch
   - sequential-thinking-server
   - memory-server
+  - bash-mcp-server
 #  - Bash # Pending Bash MCP
 #  - TodoWrite
 #  - Task

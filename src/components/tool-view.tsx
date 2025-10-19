@@ -66,32 +66,34 @@ export const ToolView: React.FC<ToolViewProps> = ({
           </Text>
 
           <Box marginTop={1} flexDirection="column">
-            {Object.entries(tools).map(([name, value], index) => {
-              const isSelected = index === selectedIndex;
+            {Object.entries(tools)
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([name, value], index) => {
+                const isSelected = index === selectedIndex;
 
-              return (
-                <Box key={name} flexDirection="row" columnGap={2}>
-                  <Text
-                    color={isSelected ? "black" : "gray"}
-                    backgroundColor={isSelected ? "gray" : undefined}
-                  >
-                    {name.padEnd(20)}
-                  </Text>
-                  <Text
-                    color={isSelected ? "black" : "gray"}
-                    backgroundColor={isSelected ? "gray" : undefined}
-                  >
-                    command: {value.command}
-                  </Text>
-                  <Text
-                    color={isSelected ? "black" : "gray"}
-                    backgroundColor={isSelected ? "gray" : undefined}
-                  >
-                    args: {value.args?.join(" ")}
-                  </Text>
-                </Box>
-              );
-            })}
+                return (
+                  <Box key={name} flexDirection="row" columnGap={2}>
+                    <Text
+                      color={isSelected ? "black" : "gray"}
+                      backgroundColor={isSelected ? "gray" : undefined}
+                    >
+                      {name.padEnd(20)}
+                    </Text>
+                    <Text
+                      color={isSelected ? "black" : "gray"}
+                      backgroundColor={isSelected ? "gray" : undefined}
+                    >
+                      command: {value.command}
+                    </Text>
+                    <Text
+                      color={isSelected ? "black" : "gray"}
+                      backgroundColor={isSelected ? "gray" : undefined}
+                    >
+                      args: {value.args?.join(" ")}
+                    </Text>
+                  </Box>
+                );
+              })}
           </Box>
         </Box>
       )}

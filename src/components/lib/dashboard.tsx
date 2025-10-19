@@ -9,7 +9,6 @@ import { SessionView, MessageView } from "./display-types.js";
 import { createKey } from "./utils.js";
 import { RuntimeAgent } from "../../types/index.js";
 import Markdown from "./markdown-text.js";
-import { logger } from "../../utils/logger.js";
 
 const ToElement = memo(
   ({
@@ -78,19 +77,21 @@ export const SystemMessages = memo(
     messages: MessageView[];
     createKeyCallback: (...parts: string[]) => string;
   }) => {
-    const systemMessageKey = useMemo(
-      () => createKeyCallback("systemMessage"),
+    const systemMessageKey = useCallback(
+      (ext: string | number) =>
+        createKeyCallback("systemMessage", ext.toString()),
       []
     );
     const systemTileKey = useMemo(() => createKeyCallback("systemTile"), []);
     const metadataKey = useMemo(() => createKeyCallback("metadata"), []);
-    const systemMessageMetadataKey = useMemo(
-      () => createKeyCallback("systemMessageMetadata"),
+    const systemMessageMetadataKey = useCallback(
+      (ext: string | number) =>
+        createKeyCallback("systemMessageMetadata", ext.toString()),
       []
     );
     return messages.map((message, index) => (
       <Box
-        key={systemMessageKey}
+        key={systemMessageKey(index)}
         flexDirection="column"
         rowGap={1}
         overflow="hidden"
@@ -105,7 +106,7 @@ export const SystemMessages = memo(
           <>
             <Markdown key={metadataKey} color="whiteBright">
               <SystemMessageMetadata
-                key={systemMessageMetadataKey}
+                key={systemMessageMetadataKey(index)}
                 content={message.metadata?.content || ""}
               />
             </Markdown>
@@ -123,7 +124,6 @@ export const Dashboard = memo(
     session: SessionView;
     runtimeAgent?: RuntimeAgent;
   }): React.JSX.Element => {
-    logger.info("Dashboard", { session, runtimeAgent });
     const lastAgentMessage = useMemo(
       () => session.filter((message) => message.role === "agent").at(-1),
       [session]
@@ -138,7 +138,15 @@ export const Dashboard = memo(
           .filter((message) => message.role === "system")
           .reverse()
           .slice(0, 5)
-          .reverse(),
+          .reverse() ?? [
+          {
+            role: "system",
+            content:
+              "*You are now chatting with " +
+              runtimeAgent?.definition.name +
+              "*",
+          },
+        ],
       [session]
     );
 

@@ -66,27 +66,29 @@ export const TeamView: React.FC<TeamViewProps> = ({
           </Text>
 
           <Box marginTop={1} flexDirection="column">
-            {teams.map((team, index) => {
-              const isSelected = index === selectedIndex;
-              const totalMembers = team.memberIds.length;
+            {teams
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((team, index) => {
+                const isSelected = index === selectedIndex;
+                const totalMembers = team.memberIds.length;
 
-              return (
-                <Box key={team.name} flexDirection="row">
-                  <Text
-                    color={isSelected ? "black" : "gray"}
-                    backgroundColor={isSelected ? "gray" : undefined}
-                  >
-                    {team.name.padEnd(20)}
-                    {/* {`Lead: ${team.leadId}`.padEnd(12)} */}
-                    {/* {`${team.memberIds.length} members`.padEnd(15)} */}
-                    {totalMembers} members{" "}
-                  </Text>
-                  {!team.leadId && (
-                    <StatusMessage variant="warning">{``}</StatusMessage>
-                  )}
-                </Box>
-              );
-            })}
+                return (
+                  <Box key={team.name} flexDirection="row">
+                    <Text
+                      color={isSelected ? "black" : "gray"}
+                      backgroundColor={isSelected ? "gray" : undefined}
+                    >
+                      {team.name.padEnd(20)}
+                      {/* {`Lead: ${team.leadId}`.padEnd(12)} */}
+                      {/* {`${team.memberIds.length} members`.padEnd(15)} */}
+                      {totalMembers} members{" "}
+                    </Text>
+                    {!team.leadId && (
+                      <StatusMessage variant="warning">{``}</StatusMessage>
+                    )}
+                  </Box>
+                );
+              })}
           </Box>
 
           {teams[selectedIndex] && (

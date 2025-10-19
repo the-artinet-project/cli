@@ -32,7 +32,6 @@ export async function onSubmit(
       ...currentSession,
       { role: "user", content: formatMessage(message.trim(), "user") },
     ]);
-
     let sessionId = taskId;
     if (!sessionId || sessionId === "") {
       sessionId = uuidv4();

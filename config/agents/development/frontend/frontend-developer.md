@@ -17,6 +17,7 @@ tools:
   - mcp-fetch
   - sequential-thinking-server
   - memory-server
+  - bash-mcp-server
 teams:
   - name: development
     role: member

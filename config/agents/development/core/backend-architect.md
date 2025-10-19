@@ -16,6 +16,7 @@ skills:
     name: API Development
     description: Design and implement scalable APIs
 tools:
+  - bash-mcp-server
   - secure-filesystem-server
   - mcp-fetch
   - sequential-thinking-server

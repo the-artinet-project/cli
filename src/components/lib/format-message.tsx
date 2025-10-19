@@ -110,7 +110,8 @@ export const formatMessage = (
         key={createKey("message", message.slice(0, 10))}
         color="brightWhite"
       >
-        {message.trim()}
+        {message.slice(0, 5000).trim()}
+        {message.length > 5000 ? "..." : ""}
       </Markdown>
     );
   }

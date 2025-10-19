@@ -100,6 +100,13 @@ export function onEvent({
       update &&
       (update as TaskStatusUpdateEvent)?.status?.state !== "completed"
     ) {
+      const _updateRole =
+        (update as TaskStatusUpdateEvent)?.status?.message?.role ??
+        (update as Message)?.role ??
+        "agent";
+      if (_updateRole === "user") {
+        return;
+      }
       const parts = getParts(
         (update as Message)?.parts ??
           (update as TaskStatusUpdateEvent)?.status?.message?.parts ??

@@ -13,6 +13,7 @@ skills:
 tools:
   - secure-filesystem-server
   - mcp-fetch
+  - bash-mcp-server
 teams:
   - name: development
     role: member

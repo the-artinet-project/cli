@@ -47,9 +47,10 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
+    "clean:all": "rimraf dist node_modules package-lock.json",
     "dev": "tsc --watch",
     "start": "node dist/bin/symphony.js",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean:all && npm i && npm run build"
   },
   "dependencies": {
     "@artinet/router": "^0.0.12",
@@ -75,6 +76,7 @@
     "cli-spinners": "2.9.2"
   },
   "peerDependencies": {
+    "@artinet/bash-mcp": "^0.0.4",
     "@modelcontextprotocol/server-filesystem": "^2025.8.21",
     "@modelcontextprotocol/server-memory": "^2025.8.4",
     "@modelcontextprotocol/server-sequential-thinking": "^2025.7.1",

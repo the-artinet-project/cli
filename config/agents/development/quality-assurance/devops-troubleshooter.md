@@ -17,6 +17,7 @@ tools:
   - secure-filesystem-server
   - mcp-fetch
   - sequential-thinking-server
+  - bash-mcp-server
 teams:
   - name: development
     role: member
