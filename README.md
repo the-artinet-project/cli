@@ -41,6 +41,8 @@ symphony
 - [Official Memory MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/memory#knowledge-graph-memory-server): `npx -y "@modelcontextprotocol/server-memory"`
 - [Official Thinking MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking#sequential-thinking-mcp-server): `npx -y @modelcontextprotocol/server-sequential-thinking`
 - [@artinet/bash-mcp](https://github.com/the-artinet-project/mcp/tree/main/servers/bash): `npx -y @artinet/bash-mcp`
+  
+*To Ensure that you're agents do not get confused, we **strongly** recommend running symphony from the same directory as your approved filesystem directory.*
 
 ## Config
 
