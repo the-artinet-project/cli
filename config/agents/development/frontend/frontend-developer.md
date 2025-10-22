@@ -21,6 +21,8 @@ tools:
 teams:
   - name: development
     role: member
+  - name: product
+    role: member
   - name: frontend
     role: lead
 ---

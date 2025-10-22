@@ -19,7 +19,7 @@ tools:
   - sequential-thinking-server
   - memory-server
 teams:
-  - name: business
+  - name: product
     role: member
 ---
 

@@ -54,6 +54,10 @@ Stdio MCP Servers can be added by updating the mcp.json file:
 
 ```json
 {
+  "bash-mcp-server": {
+    "command": "npx",
+    "args": ["-y", "@artinet/bash-mcp"]
+  },
   "secure-filesystem-server": {
     "command": "npx",
     "args": [

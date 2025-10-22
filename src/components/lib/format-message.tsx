@@ -10,7 +10,7 @@ import { AgentResponse, AgentResponseSchema } from "@artinet/types";
 import { MessageView } from "./display-types.js";
 import { createKey } from "./utils.js";
 import Markdown from "./markdown-text.js";
-// import { logger } from "../../utils/logger.js";
+import { logger } from "@artinet/router";
 
 export function extractResultContent(
   response: AgentResponse | ToolResponse
@@ -88,33 +88,44 @@ export const createAgentMessage = (
 
 export const formatMessage = (
   message: string,
-  role?: "user" | "agent" | "system"
+  role?: "user" | "agent" | "system",
+  fullMessage?: boolean
 ): MessageView["content"] => {
-  if (safeParse(message, ToolResponseSchema).success) {
-    const toolResponse: ToolResponse = safeParse(
-      message,
-      ToolResponseSchema
-    ).data;
-    return createToolMessage(toolResponse);
-  } else if (safeParse(message, AgentResponseSchema).success) {
-    const a2aResponse: AgentResponse = safeParse(
-      message,
-      AgentResponseSchema
-    ).data;
-    return createAgentMessage(a2aResponse);
-  } else {
-    // logger.log("formatMessage", message);
-    const isUser = role === "user";
-    return (
-      <Markdown
-        italic={isUser}
-        underline={isUser}
-        key={createKey("message", message.slice(0, 10))}
-        color="brightWhite"
-      >
-        {message.slice(0, 3250).trim()}
-        {message.length > 3250 ? "..." : ""}
-      </Markdown>
-    );
+  try {
+    if (safeParse(message, ToolResponseSchema).success) {
+      const toolResponse: ToolResponse = safeParse(
+        message,
+        ToolResponseSchema
+      ).data;
+      return createToolMessage(toolResponse);
+    } else if (safeParse(message, AgentResponseSchema).success) {
+      const a2aResponse: AgentResponse = safeParse(
+        message,
+        AgentResponseSchema
+      ).data;
+      return createAgentMessage(a2aResponse);
+    } else if (typeof message === "string") {
+      const isUser = role === "user";
+      return (
+        <Markdown
+          italic={isUser}
+          underline={isUser}
+          key={createKey("message", message.slice(0, 10))}
+          color="brightWhite"
+        >
+          {`${
+            fullMessage
+              ? message
+              : message.slice(0, 3125).trim() +
+                (message.length > 3125 ? "..." : "")
+          }`}
+        </Markdown>
+      );
+    } else {
+      return <Text color="white">{JSON.stringify(message)}</Text>;
+    }
+  } catch (error) {
+    logger.error("formatMessage: Error formatting message: ", error);
+    return <Text color="white">{message}</Text>;
   }
 };

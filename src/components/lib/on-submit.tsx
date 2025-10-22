@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { State, Update, Task, Message, getParts } from "@artinet/sdk";
+import { State, Update, Task, Message, getContent } from "@artinet/sdk";
 import { AgentResponse, ToolResponse } from "@artinet/types";
 import { GlobalRouter } from "../../global.js";
 import { logger } from "../../utils/logger.js";
@@ -67,28 +67,20 @@ export async function onSubmit(
           return undefined;
         });
       if (!result) {
-        setSession((currentSession) => [
-          ...currentSession,
-          {
-            role: "system",
-            content: (
-              <Alert variant="error">
-                Failed to get a response from the agent
-              </Alert>
-            ),
-          },
-        ]);
+        logger.error(
+          "onSubmit: No result from agent: " +
+            JSON.stringify(agent.definition.name, null, 2)
+        );
+        throw new Error("No result from agent");
       }
-      const parts = getParts(
-        (result as Message)?.parts ??
-          (result as Task)?.status?.message?.parts ??
-          []
-      );
-      const content =
-        parts.text ??
-        parts.file.map((file) => file.bytes).join("\n") ??
-        parts.data.map((data) => JSON.stringify(data)).join("\n") ??
-        "";
+      const content = getContent(result);
+      if (!content || content === "" || content === "{}" || content === "[]") {
+        logger.error(
+          "onSubmit: No content from agent response: " +
+            JSON.stringify(result, null, 2)
+        );
+        throw new Error("No content from agent response");
+      }
       setSession((currentSession) => [
         ...currentSession,
         {

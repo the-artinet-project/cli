@@ -4,8 +4,8 @@
  */
 
 import { RuntimeAgent } from "../types/index.js";
-import { useState, memo, useCallback, useMemo } from "react";
-import { useInput, Box } from "ink";
+import { useState, memo, useCallback, useMemo, useEffect } from "react";
+import { useInput, Box, Spacer } from "ink";
 import { BaseProps } from "./lib/index.js";
 import { useInputContext } from "../contexts/InputContext.js";
 import { State, Update } from "@artinet/sdk";
@@ -50,12 +50,21 @@ export const Chat: React.FC<SessionProps> = memo(
 
     const [taskId, setTaskId] = useState<string | undefined>(sessionId);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [continueButton, setContinueButton] = useState<boolean>(false);
     const { isActive } = useInputContext();
+
+    useEffect(() => {
+      if (session.at(-1)?.role === "agent") {
+        setContinueButton(true);
+      }
+    }, [session.length]);
 
     useInput(
       (_, key) => {
         if (key.escape) {
           onReturn?.();
+        } else if (key.ctrl && key.rightArrow) {
+          handleSubmit("Please continue...");
         }
       },
       { isActive: isActive(id) }
@@ -89,8 +98,9 @@ export const Chat: React.FC<SessionProps> = memo(
         displayName,
         sessionLength: session.length,
         isDisabled: isLoading,
+        continueButton,
       }),
-      [displayName, session.length, isLoading]
+      [displayName, session.length, isLoading, continueButton]
     );
     const chatInputContainerKey = useMemo(
       () => `chat-input-container-${session.length.toString()}`,
@@ -99,18 +109,21 @@ export const Chat: React.FC<SessionProps> = memo(
     return (
       <>
         {isActive(id) && (
-          <Box
-            key={chatInputContainerKey}
-            flexDirection="column"
-            flexGrow={0}
-            rowGap={1}
-            height="100%"
-            overflow="hidden"
-            width="100%"
-          >
-            <Dashboard session={session} runtimeAgent={agent} />
-            <ChatInput {...chatInputProps} onSubmit={handleSubmit} />
-          </Box>
+          <>
+            <Spacer />
+            <Box
+              key={chatInputContainerKey}
+              flexDirection="column"
+              flexGrow={2}
+              rowGap={1}
+              height="100%"
+              width="100%"
+            >
+              <Dashboard session={session} runtimeAgent={agent} />
+              <ChatInput {...chatInputProps} onSubmit={handleSubmit} />
+            </Box>
+            <Spacer />
+          </>
         )}
       </>
     );

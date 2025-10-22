@@ -1,12 +1,12 @@
 {
   "name": "@artinet/symphony",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "An interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.",
   "author": "artinet",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/the-artinet-project/cli"
+    "url": "git+https://github.com/the-artinet-project/cli.git"
   },
   "issues": {
     "url": "https://github.com/the-artinet-project/cli/issues"
@@ -19,7 +19,7 @@
     "LICENSE"
   ],
   "bin": {
-    "symphony": "./dist/bin/symphony.js"
+    "symphony": "dist/bin/symphony.js"
   },
   "keywords": [
     "artinet",
@@ -53,8 +53,8 @@
     "prepublishOnly": "npm run clean:all && npm i && npm run build"
   },
   "dependencies": {
-    "@artinet/router": "^0.0.12",
-    "@artinet/sdk": "^0.5.10",
+    "@artinet/router": "^0.0.14",
+    "@artinet/sdk": "^0.5.11",
     "@artinet/types": "^0.0.4",
     "@inkjs/ui": "^2.0.0",
     "@modelcontextprotocol/sdk": "^1.20.0",
@@ -76,7 +76,7 @@
     "cli-spinners": "2.9.2"
   },
   "peerDependencies": {
-    "@artinet/bash-mcp": "^0.0.4",
+    "@artinet/bash-mcp": "^0.0.5",
     "@modelcontextprotocol/server-filesystem": "^2025.8.21",
     "@modelcontextprotocol/server-memory": "^2025.8.4",
     "@modelcontextprotocol/server-sequential-thinking": "^2025.7.1",

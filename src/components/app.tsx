@@ -246,9 +246,20 @@ export const App: React.FC = () => {
     [configManager]
   );
   return (
-    <Box key="app-container" flexDirection="column" height="100%">
+    <Box
+      key="app-container"
+      flexDirection="column"
+      height="100%"
+      flexGrow={2}
+      flexShrink={0}
+    >
       {!isActive("chat") && renderHeader}
-      <Box key="app-components-container" flexGrow={1} marginTop={1}>
+      <Box
+        key="app-components-container"
+        flexGrow={2}
+        flexShrink={0}
+        marginTop={1}
+      >
         {isActive("app") && (
           <Box
             key="app-details"

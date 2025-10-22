@@ -9,25 +9,24 @@ import { SessionView, MessageView } from "./display-types.js";
 import { createKey } from "./utils.js";
 import { RuntimeAgent } from "../../types/index.js";
 import Markdown from "./markdown-text.js";
+import { formatMessage } from "./format-message.js";
+import { Static } from "ink";
 // import { logger } from "../../utils/logger.js";
 
 const ToElement = memo(
   ({
-    baseKey,
     message,
+    role,
+    fullMessage,
   }: {
-    baseKey: string;
     message: MessageView["content"];
+    role?: "user" | "agent" | "system";
+    fullMessage?: boolean;
   }) => {
-    const contentKey = useMemo(() => createKey(baseKey, "content"), [baseKey]);
     if (typeof message === "string") {
-      return (
-        <>
-          <Markdown key={contentKey}>{message}</Markdown>
-        </>
-      );
+      return <>{formatMessage(message, role, fullMessage)}</>;
     }
-    return message;
+    return <>{message}</>;
   }
 );
 
@@ -44,20 +43,31 @@ function canDisplayMetadata(message: MessageView): boolean {
   );
 }
 export const AgentResponse = memo(
-  ({ content }: { content: MessageView["content"] }) => {
+  ({
+    content,
+    index,
+    fullMessage,
+  }: {
+    content: MessageView["content"];
+    index?: number;
+    fullMessage?: boolean;
+  }) => {
     const agentResponseContainerKey = useMemo(
       () =>
-        createKey("agent-response-container", content.toString().slice(0, 10)),
-      []
+        createKey(
+          "agent-response-container",
+          content.toString().slice(0, 10) + (index?.toString() || "")
+        ),
+      [content]
     );
     return (
       <Box
-        flexGrow={0}
+        flexGrow={1}
         flexShrink={1}
         overflow="hidden"
         key={agentResponseContainerKey}
       >
-        <ToElement baseKey="agent-response" message={content} />
+        <ToElement message={content} role="agent" fullMessage={fullMessage} />
       </Box>
     );
   }
@@ -70,6 +80,62 @@ const SystemMessageMetadata = memo(({ content }: { content: string }) => {
     </>
   );
 });
+
+const SystemMessage = memo(
+  ({
+    index,
+    message,
+    showMetadata,
+    createKeyCallback,
+  }: {
+    index: number;
+    message: MessageView;
+    showMetadata: boolean;
+    createKeyCallback: (...parts: string[]) => string;
+  }) => {
+    const systemMessageKey = useCallback(
+      (ext: string | number) =>
+        createKeyCallback("systemMessage", ext.toString()),
+      []
+    );
+    const metadataKey = useMemo(() => createKeyCallback("metadata"), []);
+    const systemMessageMetadataKey = useCallback(
+      (ext: string | number) =>
+        createKeyCallback("systemMessageMetadata", ext.toString()),
+      []
+    );
+    return (
+      <Box
+        key={systemMessageKey(index)}
+        flexDirection="column"
+        rowGap={1}
+        overflow="hidden"
+        flexShrink={0}
+        borderStyle="round"
+        borderColor="yellow"
+        width="100%"
+        justifyContent="center"
+      >
+        <ToElement message={message.content} role="system" />
+        {showMetadata && canDisplayMetadata(message) && (
+          <>
+            <Markdown key={metadataKey} color="whiteBright">
+              <SystemMessageMetadata
+                key={systemMessageMetadataKey(index)}
+                content={message.metadata?.content || ""}
+              />
+            </Markdown>
+          </>
+        )}
+      </Box>
+    );
+  }
+);
+
+const UserResponse = memo(({ message }: { message: MessageView }) => {
+  return <ToElement message={message.content} role="user" fullMessage={true} />;
+});
+
 export const SystemMessages = memo(
   ({
     messages,
@@ -83,7 +149,6 @@ export const SystemMessages = memo(
         createKeyCallback("systemMessage", ext.toString()),
       []
     );
-    const systemTileKey = useMemo(() => createKeyCallback("systemTile"), []);
     const metadataKey = useMemo(() => createKeyCallback("metadata"), []);
     const systemMessageMetadataKey = useCallback(
       (ext: string | number) =>
@@ -102,7 +167,7 @@ export const SystemMessages = memo(
         width="100%"
         justifyContent="center"
       >
-        <ToElement baseKey={systemTileKey} message={message.content} />
+        <ToElement message={message.content} />
         {index === messages.length - 1 && canDisplayMetadata(message) && (
           <>
             <Markdown key={metadataKey} color="whiteBright">
@@ -170,10 +235,6 @@ export const Dashboard = memo(
       []
     );
     const titleKey = useMemo(() => createKeyCallback("title"), []);
-    const userMessageContainerKey = useMemo(
-      () => createKeyCallback("userMessageContainer"),
-      []
-    );
     const agentMessageContainerKey = useMemo(
       () => createKeyCallback("agentMessageContainer"),
       []
@@ -212,10 +273,9 @@ export const Dashboard = memo(
         <Box
           key={containerKey}
           flexDirection="row"
+          flexGrow={2}
           flexShrink={0}
           rowGap={1}
-          // borderStyle="round"
-          // borderColor="gray"
           padding={1}
           columnGap={2}
           height="80%"
@@ -240,10 +300,7 @@ export const Dashboard = memo(
                 Dashboard:
               </Text>
               {lastUserMessage && (
-                <ToElement
-                  baseKey={userMessageContainerKey}
-                  message={lastUserMessage.content}
-                />
+                <ToElement message={lastUserMessage.content} />
               )}
             </Box>
             <Spacer />
@@ -310,6 +367,77 @@ export const Dashboard = memo(
           <Spacer />
         </Box>
       </>
+    );
+  }
+);
+
+export const ChatSessionView = memo(
+  ({ session }: { session: SessionView }): React.JSX.Element => {
+    const baseKey = useMemo(
+      () => createKey("chat-session-view", session.length.toString()),
+      [session.length]
+    );
+
+    const createKeyCallback = useCallback(
+      (...parts: string[]) => createKey(baseKey, ...parts),
+      [baseKey]
+    );
+    const containerKey = useMemo(() => createKeyCallback("container"), []);
+    const messageContainerKey = useMemo(
+      () => createKeyCallback("messageContainer"),
+      []
+    );
+    return (
+      <Box key={containerKey} flexShrink={0}>
+        <Static
+          key={messageContainerKey}
+          items={session}
+          style={{
+            flexGrow: 2,
+            rowGap: 1,
+            overflow: "hidden",
+          }}
+          children={(message: MessageView, index: number) => {
+            return (
+              <Box
+                key={createKeyCallback("message", index.toString())}
+                marginBottom={1}
+                width="100%"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Box
+                  flexGrow={1}
+                  flexShrink={0}
+                  width="80%"
+                  flexWrap="wrap"
+                  alignItems={
+                    message.role === "user"
+                      ? "flex-end"
+                      : message.role === "agent"
+                      ? "flex-start"
+                      : "stretch"
+                  }
+                  justifyContent="center"
+                >
+                  {message.role === "agent" ? (
+                    <AgentResponse content={message.content} />
+                  ) : message.role === "system" ? (
+                    <SystemMessage
+                      index={index}
+                      message={message}
+                      showMetadata={index === session.length - 1}
+                      createKeyCallback={createKeyCallback}
+                    />
+                  ) : (
+                    <UserResponse message={message} />
+                  )}
+                </Box>
+              </Box>
+            );
+          }}
+        />
+      </Box>
     );
   }
 );

@@ -7,6 +7,7 @@ export interface ChatInputProps {
   displayName: string;
   sessionLength: number;
   isDisabled: boolean;
+  continueButton: boolean;
   onChange?: (value: string) => void;
   onSubmit: (value: string) => void;
 }
@@ -23,11 +24,32 @@ const LoadingSpinner = memo(({ sessionLength }: { sessionLength: number }) => {
   );
 });
 
+const ContinueButton = memo(({ sessionLength }: { sessionLength: number }) => {
+  const continueButtonKey = useMemo(
+    () => `chat-input-continue-button-${sessionLength.toString()}`,
+    []
+  );
+  return (
+    <Box
+      key={continueButtonKey}
+      marginRight={2}
+      backgroundColor={"green"}
+      paddingLeft={1}
+      paddingRight={1}
+    >
+      <Text key={continueButtonKey} color="whiteBright" bold>
+        Ctrl + → to continue...
+      </Text>
+    </Box>
+  );
+});
+
 export const ChatInput = memo(
   ({
     displayName,
     sessionLength,
     isDisabled,
+    continueButton,
     onChange,
     onSubmit,
   }: ChatInputProps): React.JSX.Element => {
@@ -67,9 +89,10 @@ export const ChatInput = memo(
       <Box
         key={inputContainerKey}
         flexDirection="column"
-        flexGrow={1}
+        flexGrow={2}
         flexShrink={0}
         height="20%"
+        position="relative"
       >
         <Box
           key={inputBoxKey}
@@ -92,6 +115,9 @@ export const ChatInput = memo(
             />
           </Box>
           {isDisabled && <LoadingSpinner sessionLength={sessionLength} />}
+          {continueButton && !isDisabled && (
+            <ContinueButton sessionLength={sessionLength} />
+          )}
         </Box>
         <Box
           key={textRowContainerKey}
@@ -115,6 +141,7 @@ export const ChatInput = memo(
       prevProps.displayName === nextProps.displayName &&
       prevProps.sessionLength === nextProps.sessionLength &&
       prevProps.isDisabled === nextProps.isDisabled &&
+      prevProps.continueButton === nextProps.continueButton &&
       prevProps.onSubmit === nextProps.onSubmit
     );
   }

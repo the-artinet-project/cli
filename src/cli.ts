@@ -7,6 +7,7 @@
 import { launchManager } from "./commands/index.js";
 
 try {
+  console.clear();
   await launchManager();
 } catch (error) {
   console.error("Symphony failed with the following error: ", error);

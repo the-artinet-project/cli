@@ -24,6 +24,8 @@ tools:
 teams:
   - name: development
     role: lead
+  - name: product
+    role: member
 ---
 
 # Backend Architect

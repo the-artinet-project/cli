@@ -8,11 +8,10 @@ import { parse, setOptions } from "marked";
 // @ts-ignore
 import TerminalRenderer, { TerminalRendererOptions } from "marked-terminal";
 import dedent from "dedent";
-
 export type MarkdownProps = TerminalRendererOptions & {
   children: string;
 };
-
+//todo: remove unsafe Markdown Calls
 const Markdown = ({ children, ...options }: MarkdownProps) => {
   setOptions({
     renderer: new TerminalRenderer(options),

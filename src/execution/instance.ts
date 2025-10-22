@@ -8,9 +8,9 @@ import {
   Context,
   TaskAndHistory,
   TaskStatusUpdateEvent,
-  getParts,
   Message,
   TaskState,
+  getContent,
 } from "@artinet/sdk";
 import { LocalRouter, logger } from "@artinet/router";
 import { Session } from "@artinet/types";
@@ -34,6 +34,9 @@ If the assistant cannot find a file or directory, the assistant must ask the use
 The assistant must always check and read files before editing them.
 The assistmant must always check previous responses before providing a new response to ensure that the assistant is not repeating itself and calling tools and agents unnecessarily.
 The assistant must avoid recursive calls whenever possible.
+The assistant must always create or update a plan.md file in the current directory with the plan for the tasks.
+The assistant must indicate the status of the tasks in the plan.md file and provide its name whenever it updates the plan.md file.
+The assistant must always read the plan.md file before starting a new task and update the file with the status of the tasks before taking any other action.
 `;
 }
 
@@ -46,18 +49,32 @@ function createRoutedExecutor(
     logger.log("agent[" + baseAgent.definition.name + "]: starting");
     const agentName: string = baseAgent.definition.name;
     // first we extract the user message
-    //todo bug, on first invocation, the incoming message is included in the history.
-    //todo on second invocation, the incoming message is NOT included in the history(may be an sdk bug).
-    const parts = getParts(context.command.message.parts);
-    const message: string =
-      parts.text ??
-      parts.file.map((file) => file.bytes).join("\n") ??
-      parts.data.map((data) => JSON.stringify(data)).join("\n");
-    logger.log("agent[" + agentName + "]: message recieved: ", message);
     const taskId =
       context.State().task.id ?? context.command.message.taskId ?? uuidv4();
     const contextId =
       context.contextId ?? context.command.message.contextId ?? uuidv4();
+    const message: string | undefined = getContent(context.command.message);
+    if (!message) {
+      logger.error("agent[" + agentName + "]: no message detected");
+      const failedEvent: TaskStatusUpdateEvent = {
+        kind: "status-update",
+        taskId: taskId,
+        contextId: contextId,
+        status: {
+          state: TaskState.failed,
+          message: {
+            kind: "message",
+            role: "agent",
+            messageId: uuidv4(),
+            parts: [{ kind: "text", text: "no message detected" }],
+          },
+        },
+        final: true,
+      };
+      yield failedEvent;
+      return;
+    }
+    logger.log("agent[" + agentName + "]: message recieved: ", message);
     logger.log("agent[" + agentName + "]: taskId: ", taskId);
     logger.log("agent[" + agentName + "]: contextId: ", contextId);
     yield {
@@ -72,18 +89,16 @@ function createRoutedExecutor(
       final: false,
     };
     //then we extract the session history
-    //the user message is included in the history
     const history: Session = {
       id: taskId,
       messages:
         context
           .State()
           .task.history?.map((msg: Message) => {
-            const parts = getParts(msg.parts);
-            const content =
-              parts.text ??
-              parts.file.map((file) => file.bytes).join("\n") ??
-              parts.data.map((data) => JSON.stringify(data)).join("\n");
+            const content: string | undefined = getContent(msg);
+            if (!content) {
+              return { __skip: true } as any;
+            }
             if (
               content.includes("tool_response") ||
               content.includes("agent_response") ||
@@ -107,10 +122,8 @@ function createRoutedExecutor(
     const responseMessage = await router
       .connect({
         message: {
-          identifier:
-            baseAgent.definition.model ??
-            "0xf7dcee219e1a4027191508511c99ea64fe7202c71df416b5e5ed03cc2e6b386f",
-          preferredEndpoint: "hf-inference",
+          identifier: baseAgent.definition.model ?? "deepseek-ai/Deepseek-R1",
+          preferredEndpoint: "open-router",
           session: {
             ...history,
             messages: [

@@ -17,7 +17,7 @@ tools:
   - mcp-fetch
   - memory-server
 teams:
-  - name: business
+  - name: product
     role: member
 ---
 
