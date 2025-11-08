@@ -10,6 +10,8 @@
 
 An _experimental_ interactive command-line interface that uses the Agent2Agent (A2A) & Model Context Protocols (MCP) to manage multi-agent systems.
 
+\*Symphony now scans for local A2A servers on start-up with no additional configuration required.
+
 https://github.com/user-attachments/assets/ea5ce501-9dfd-4327-999b-d3d24275d2a1
 
 ## Installation
@@ -41,8 +43,8 @@ symphony
 - [Official Memory MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/memory#knowledge-graph-memory-server): `npx -y "@modelcontextprotocol/server-memory"`
 - [Official Thinking MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking#sequential-thinking-mcp-server): `npx -y @modelcontextprotocol/server-sequential-thinking`
 - [@artinet/bash-mcp](https://github.com/the-artinet-project/mcp/tree/main/servers/bash): `npx -y @artinet/bash-mcp`
-  
-*To Ensure that you're agents do not get confused, we **strongly** recommend running symphony from the same directory as your approved filesystem directory.*
+
+_To Ensure that you're agents do not get confused, we **strongly** recommend running symphony from the same directory as your approved filesystem directory._
 
 ## Config
 
@@ -122,10 +124,27 @@ You are a helpful assistant that can...
 
 - Detailed logs of each session can be found in the the `artinet.log` file in the installation directory.
 
-### Coming Soon
+## Discovery
 
-- Custom [IRouter](https://www.npmjs.com/package/@artinet/router?activeTab=readme) plugins.
-- Custom [Agent Executors](https://github.com/the-artinet-project/artinet-sdk).
+Symphony will scan the system for Agent2Agent servers and add them to its manifest:
+
+![Agent Discovery Demo](./docs/assets/discovery.gif)
+
+Put your A2A agent on a team by adding the `artinet:symphony`.`teams` extension to their `AgentCard`:
+
+```typescript
+capabilities: {
+  streaming: true,
+  extensions: [
+    {
+      uri: "artinet:symphony",
+      params: {
+        teams: ["development", "documentation"],
+      },
+    },
+  ],
+},
+```
 
 ## License
 

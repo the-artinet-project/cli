@@ -11,6 +11,7 @@ export interface RuntimeAgent {
   sourceFile: string;
   definition: AgentDefinition;
   prompt: string;
+  client?: boolean;
 }
 
 export interface LoadError {

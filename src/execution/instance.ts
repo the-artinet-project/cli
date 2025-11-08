@@ -8,14 +8,14 @@ import {
   Context,
   TaskAndHistory,
   TaskStatusUpdateEvent,
-  Message,
   TaskState,
   getContent,
 } from "@artinet/sdk";
 import { LocalRouter, logger } from "@artinet/router";
-import { Session } from "@artinet/types";
+import { Session, SessionMessage } from "@artinet/types";
 import { AgentLoader } from "../config/index.js";
 import { RuntimeAgent } from "../types/index.js";
+import { getHistory } from "./history.js";
 
 function fullAgentPrompt(basePrompt: string, userMessage: string): string {
   return `
@@ -91,72 +91,55 @@ function createRoutedExecutor(
     //then we extract the session history
     const history: Session = {
       id: taskId,
-      messages:
-        context
-          .State()
-          .task.history?.map((msg: Message) => {
-            const content: string | undefined = getContent(msg);
-            if (!content) {
-              return { __skip: true } as any;
-            }
-            if (
-              content.includes("tool_response") ||
-              content.includes("agent_response") ||
-              content === "" ||
-              content === "{}" ||
-              content === "[]" ||
-              content === message
-            ) {
-              return { __skip: true } as any;
-            }
-            return {
-              role: msg.role,
-              content: content,
-            };
-          })
-          .filter((item) => !(item as any).__skip) ?? [],
+      messages: getHistory(context.State().task, (message: SessionMessage) => {
+        return (
+          !message.content.includes("tool_response") &&
+          !message.content.includes("agent_response")
+        );
+      }),
     };
     logger.log("agent[" + agentName + "]: history: ", history);
     logger.log("agent[" + agentName + "]: agents: ", agents);
     //then we connect to the router
-    const responseMessage = await router
-      .connect({
-        message: {
-          identifier: baseAgent.definition.model ?? "deepseek-ai/Deepseek-R1",
-          preferredEndpoint: "open-router",
-          session: {
-            ...history,
-            messages: [
-              {
-                role: "system",
-                content: fullAgentPrompt(baseAgent.prompt, message),
-              },
-              ...history.messages,
-              { role: "user", content: message },
-            ],
-          },
-          options: {
-            isAuthRequired: false,
-            isFallbackAllowed: false,
-          },
-        },
-        tools: baseAgent.definition.tools,
-        agents: agents,
-        options: {
-          taskId: taskId,
-          abortSignal: context.signal,
-        },
-      })
-      .catch((error) => {
-        logger.error("error calling router: ", error);
-        return (
-          "error calling agent: " + (error.message ?? JSON.stringify(error))
-        );
-      });
-    logger.log("agent[" + agentName + "]: response: ", responseMessage);
-
-    //then we yield the final task state
     try {
+      const responseMessage = await router
+        .connect({
+          message: {
+            identifier: baseAgent.definition.model ?? "deepseek-ai/Deepseek-R1",
+            preferredEndpoint: "open-router",
+            session: {
+              ...history,
+              messages: [
+                {
+                  role: "system",
+                  content: fullAgentPrompt(baseAgent.prompt, message),
+                },
+                ...history.messages,
+                { role: "user", content: message },
+              ],
+            },
+            options: {
+              isAuthRequired: false,
+              isFallbackAllowed: false,
+            },
+          },
+          tools: baseAgent.definition.tools,
+          agents: agents,
+          options: {
+            taskId: taskId,
+            abortSignal: context.signal,
+          },
+        })
+        .catch((error) => {
+          logger.error("error calling router: ", error);
+          return (
+            "error calling agent: " + (error.message ?? JSON.stringify(error))
+          );
+        });
+      logger.log("agent[" + agentName + "]: response: ", responseMessage);
+
+      //then we yield the final task state
+
       const taskHistory: TaskAndHistory = context.State();
       const updateEvent: TaskStatusUpdateEvent = {
         taskId: taskId,

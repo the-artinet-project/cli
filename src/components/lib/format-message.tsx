@@ -89,16 +89,18 @@ export const createAgentMessage = (
 export const formatMessage = (
   message: string,
   role?: "user" | "agent" | "system",
-  fullMessage?: boolean
+  fullMessage: boolean = false
 ): MessageView["content"] => {
   try {
     if (safeParse(message, ToolResponseSchema).success) {
+      logger.log("formatMessage: ToolResponse: ", message);
       const toolResponse: ToolResponse = safeParse(
         message,
         ToolResponseSchema
       ).data;
       return createToolMessage(toolResponse);
     } else if (safeParse(message, AgentResponseSchema).success) {
+      logger.log("formatMessage: AgentResponse: ", message);
       const a2aResponse: AgentResponse = safeParse(
         message,
         AgentResponseSchema

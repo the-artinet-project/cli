@@ -172,6 +172,7 @@ export class AgentLoader {
         sourceFile: filePath,
         definition: agentDef,
         prompt: content.trim(),
+        client: false,
       };
 
       this.agentIds.add(agentId);

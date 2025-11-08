@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { AgentLoader, loadAgents } from "./config/load-agents.js";
+import { ScanConfig, getAgentCard } from "@artinet/agent-relay";
 import { LocalRouter, EventBus } from "@artinet/router";
 import { createAgentExecutor } from "./execution/instance.js";
 import { Team, RuntimeAgent } from "./types/index.js";
@@ -12,6 +13,7 @@ import { loadAndSortTools } from "./config/load-tools.js";
 import { FileStore } from "@artinet/sdk";
 import { configManager } from "./config/manager.js";
 
+//leveraging Singletons for now, but we should consider using a more robust solution for the future
 let GlobalSessions: FileStore | undefined;
 let GlobalRouter: LocalRouter | undefined;
 let GlobalAgents: Record<string, RuntimeAgent> | undefined;
@@ -19,6 +21,62 @@ let GlobalTools: Record<string, StdioServerParameters> | undefined;
 let GlobalTeams: Record<string, Team> | undefined;
 let GlobalAbortController: AbortController | undefined;
 let GlobalEventBus: EventBus | undefined;
+
+async function discoverAgents(): Promise<void> {
+  if (!GlobalAgents) {
+    return;
+  }
+  const agentIds: string[] = (await GlobalRouter?.agents.getAgentIds()) ?? [];
+  const discoveredAgents: string[] =
+    agentIds.filter((agentId) => !GlobalAgents?.[agentId]) ?? [];
+  if (discoveredAgents?.length > 0) {
+    for (const agentId of discoveredAgents) {
+      const agent = GlobalRouter?.agents.getAgent(agentId);
+      if (!agent) {
+        logger.warn("agent not found: ", agentId);
+        continue;
+      }
+      const agentCard = await getAgentCard(agent);
+      logger.warn("agentCard", agentCard);
+      if (!agentCard) {
+        logger.warn("agentCard not found: ", agentId);
+        continue;
+      }
+      let teams: string[] = [];
+      if (
+        agentCard.capabilities.extensions?.find(
+          (extension) => extension.uri === "artinet:symphony"
+        )
+      ) {
+        teams = agentCard.capabilities.extensions?.find(
+          (extension) => extension.uri === "artinet:symphony"
+        )?.params?.teams as string[];
+        teams.forEach((team) => {
+          GlobalTeams?.[team]?.memberIds.push(agentId);
+        });
+      }
+      GlobalAgents[agentId] = {
+        sourceFile: agentCard?.url ?? "",
+        definition: {
+          ...agentCard,
+          id: agentId,
+          name: agentCard.name,
+          description: agentCard.description,
+          version: agentCard.version,
+          skills: agentCard.skills,
+          tools: [],
+          teams: teams.map((team) => ({
+            name: team,
+            role: "member",
+          })),
+        },
+        client: true,
+        prompt:
+          "You are a helpful assistant that can answer questions and help with tasks. Use the tools/agents available to you to respond to the user's request.",
+      };
+    }
+  }
+}
 
 async function loadEnv() {
   GlobalTools = await loadAndSortTools();
@@ -40,6 +98,13 @@ async function loadEnv() {
   GlobalEventBus = new EventBus();
   GlobalAbortController = new AbortController();
 
+  const scanConfig: ScanConfig = {
+    host: "localhost",
+    startPort: 3000,
+    endPort: 5000,
+    threads: 25,
+  };
+
   GlobalRouter = await LocalRouter.createRouter(
     {
       mcpServers: {
@@ -51,14 +116,18 @@ async function loadEnv() {
     undefined,
     {
       abortSignal: GlobalAbortController.signal,
-    }
+    },
+    scanConfig
   );
+
+  await discoverAgents();
 
   // Use ConfigManager for sessions path
   const sessionsPath = configManager.getConfigPath("sessions");
   GlobalSessions = new FileStore(sessionsPath);
 
   Object.values(GlobalAgents).forEach(async (agent) => {
+    if (agent.client) return;
     await GlobalRouter?.createAgent({
       engine: await createAgentExecutor(agentLoader, GlobalRouter, agent),
       agentCard: {

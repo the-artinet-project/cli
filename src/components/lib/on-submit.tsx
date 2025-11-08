@@ -3,7 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { State, Update, Task, Message, getContent } from "@artinet/sdk";
+import {
+  State,
+  Update,
+  getContent,
+  SendMessageSuccessResult,
+} from "@artinet/sdk";
 import { AgentResponse, ToolResponse } from "@artinet/types";
 import { GlobalRouter } from "../../global.js";
 import { logger } from "../../utils/logger.js";
@@ -47,25 +52,26 @@ export async function onSubmit(
     setIsLoading(true);
     try {
       GlobalRouter?.on("update", handleEvent);
-      const result: Task | Message | undefined = await GlobalRouter?.agents
-        ?.getAgent(agent.definition.name)
-        ?.sendMessage({
-          message: {
-            kind: "message",
-            role: "user",
-            messageId: uuidv4(),
-            taskId: sessionId,
-            contextId: sessionId,
-            parts: [{ kind: "text", text: message.trim() }],
-          },
-        })
-        .catch((error) => {
-          logger.error(
-            `processMessage: Error sending message: agent[${agent.definition.name}]: ${error.message}\n`,
-            error
-          );
-          return undefined;
-        });
+      const result: SendMessageSuccessResult | null | undefined =
+        await GlobalRouter?.agents
+          ?.getAgent(agent.definition.name)
+          ?.sendMessage({
+            message: {
+              kind: "message",
+              role: "user",
+              messageId: uuidv4(),
+              taskId: sessionId,
+              contextId: sessionId,
+              parts: [{ kind: "text", text: message.trim() }],
+            },
+          })
+          .catch((error) => {
+            logger.error(
+              `processMessage: Error sending message: agent[${agent.definition.name}]: ${error.message}\n`,
+              error
+            );
+            return undefined;
+          });
       if (!result) {
         logger.error(
           "onSubmit: No result from agent: " +

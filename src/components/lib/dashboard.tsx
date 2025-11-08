@@ -11,7 +11,6 @@ import { RuntimeAgent } from "../../types/index.js";
 import Markdown from "./markdown-text.js";
 import { formatMessage } from "./format-message.js";
 import { Static } from "ink";
-// import { logger } from "../../utils/logger.js";
 
 const ToElement = memo(
   ({
@@ -319,8 +318,6 @@ export const Dashboard = memo(
             </Box>
           </Box>
           <Box
-            // borderStyle="classic"
-            // borderColor="whiteBright"
             key={systemMessagesContainerKey}
             flexDirection="column"
             rowGap={1}
