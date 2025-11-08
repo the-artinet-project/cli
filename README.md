@@ -128,7 +128,7 @@ You are a helpful assistant that can...
 
 Symphony will scan the system for Agent2Agent servers and add them to its manifest:
 
-![Agent Discovery Demo](./docs/assets/discovery.gif)
+![Agent Discovery Demo](https://raw.githubusercontent.com/the-artinet-project/cli/main/docs/assets/discovery.gif)
 
 Put your A2A agent on a team by adding the `artinet:symphony`.`teams` extension to their `AgentCard`:
 
